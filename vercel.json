@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/alerts/run.js": {
+      "maxDuration": 300
+    }
+  }
+}
