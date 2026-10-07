@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PolyShi Bonding Map</title>
+  <style>
+    :root { --bg:#0b1020; --panel:#151c32; --border:#2e3b62; --text:#f1f5ff; --muted:#aab7d6; --blue:#4f7cff; --green:#35d39a; --red:#ff7280; --yellow:#f7c948; --orange:#ff9f43; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:var(--bg); color:var(--text); font-family:Arial,Helvetica,sans-serif; }
+    header { padding:10px 20px; border-bottom:1px solid var(--border); background:#11182d; }
+    .container { width:min(1180px,calc(100% - 32px)); margin:0 auto; }
+    h1 { margin:0; font-size:clamp(1.6rem,4vw,2.3rem); }
+    .subtitulo { margin:10px 0 0; color:var(--muted); line-height:1.5; }
+    main { padding:0 0 48px; }
+    .panel,.card,.message { border:1px solid var(--border); border-radius:14px; background:var(--panel); }
+    .panel { padding:20px; margin-bottom:24px; }
+    .panel h2 { margin:0 0 8px; font-size:1.15rem; }
+    .help { margin:0 0 18px; color:var(--muted); line-height:1.5; }
+    .filters { display:grid; grid-template-columns:repeat(4,minmax(130px,1fr)); gap:14px; justify-content:center; }
+    .field { display:grid; gap:7px; text-align:center; }
+    label { color:var(--muted); font-size:.9rem; text-align:center; }
+    input { width:100%; padding:11px 12px; border:1px solid var(--border); border-radius:8px; background:#0c1224; color:var(--text); font:inherit; }
+    input:focus { outline:2px solid var(--blue); outline-offset:1px; }
+    .check-field { display:flex; align-items:end; }
+    .check-label { display:flex; align-items:center; gap:9px; min-height:43px; color:var(--text); font-size:.9rem; cursor:pointer; }
+    .check-label input { width:18px; height:18px; margin:0; accent-color:var(--blue); }
+    .actions,.bar { display:flex; flex-wrap:wrap; gap:10px; }
+    .actions { margin-top:18px; align-items:center; }
+    .actions .status { margin:0; align-self:center; display:inline-flex; align-items:center; }
+    .bar { justify-content:space-between; align-items:center; margin-bottom:20px; }
+    button,.link-button { display:inline-flex; align-items:center; justify-content:center; padding:11px 16px; border:0; border-radius:8px; background:var(--blue); color:#fff; font:inherit; font-weight:bold; cursor:pointer; text-decoration:none; }
+    button:hover:not(:disabled),.link-button:hover { filter:brightness(1.1); }
+    button:disabled { opacity:.65; cursor:wait; }
+    .secondary { border:1px solid var(--border); background:transparent; color:var(--text); }
+    .status { margin:0; color:var(--muted); line-height:1.5; }
+    .markets { align-items:start; display:grid; grid-template-columns:1fr; gap:16px; }
+    .card { display:flex; flex-direction:column; padding:20px; }
+    .badge { display:inline-flex; align-self:flex-start; margin-bottom:14px; padding:6px 10px; border-radius:999px; background:rgba(247,201,72,.12); color:var(--yellow); font-size:.78rem; font-weight:bold; letter-spacing:.04em; text-transform:uppercase; }
+    .title-row { display:flex; align-items:center; gap:14px; margin:0 0 10px; }
+    .title-row .question { margin:0; flex:1; min-width:0; }
+    .question { margin:0 0 16px; font-size:1.4rem; line-height:1.45; }
+    .highlights { display:grid; grid-template-columns:1fr; gap:10px; margin-top:0; }
+    .highlight { padding:12px; border-radius:10px; text-align:center; font-weight:bold; line-height:1.45; }
+    .positive { background:rgba(53,211,154,.12); color:var(--green); }
+    .negative { background:rgba(255,114,128,.12); color:var(--red); }
+    .section { margin-top:16px; padding-top:16px; border-top:1px solid var(--border); }
+    .section-title { margin:0 0 10px; color:var(--yellow); font-size:.85rem; letter-spacing:.04em; text-transform:uppercase; }
+    .details { display:grid; gap:10px; margin-top:14px; }
+    .row { display:flex; justify-content:space-between; gap:16px; color:var(--muted); font-size:.9rem; line-height:1.4; }
+    .row strong { color:var(--text); text-align:right; }
+    .row .good { color:var(--green); }
+    .row .warning { color:var(--orange); }
+    .row .bad { color:var(--red); }
+    .depth-ok { border-left:3px solid var(--green); padding-left:10px; }
+    .depth-low { border-left:3px solid var(--orange); padding-left:10px; }
+    .score-card { display:flex; align-items:center; justify-content:center; flex:0 0 auto; margin:0; padding:6px 12px; border:1px solid rgba(247,201,72,.4); border-radius:10px; background:rgba(247,201,72,.08); }
+    .score-header { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+    .score-title { margin:0; color:var(--yellow); font-size:.9rem; letter-spacing:.04em; text-transform:uppercase; }
+    .score-value { color:var(--text); font-size:1rem; font-weight:bold; }
+    .score-details { display:grid; gap:7px; margin-top:12px; }
+    .score-note { margin:10px 0 0; color:var(--muted); font-size:.8rem; line-height:1.45; }
+    .market-link { color:inherit; text-decoration:none; transition:color .15s,text-shadow .15s; }
+    .market-link:hover,.market-link:focus { color:var(--yellow); text-shadow:0 0 12px rgba(247,201,72,.65); outline:none; }
+    .market-link:focus-visible { outline:2px solid var(--blue); outline-offset:3px; border-radius:3px; }
+    .tooltip { position:relative; display:inline-flex; align-items:center; margin-left:5px; vertical-align:middle; }
+    .tooltip-button { width:18px; height:18px; min-width:18px; padding:0; border:1px solid var(--border); border-radius:5px; background:#0c1224; color:var(--yellow); font-size:.75rem; font-weight:bold; line-height:1; cursor:help; }
+    .tooltip-button:hover,.tooltip-button:focus { background:var(--blue); color:#fff; outline:none; }
+    .tooltip-text { position:absolute; z-index:5; bottom:calc(100% + 8px); left:50%; width:250px; padding:10px; border:1px solid var(--border); border-radius:8px; background:#0c1224; color:var(--text); font-size:.78rem; font-weight:normal; line-height:1.45; text-align:left; box-shadow:0 8px 24px rgba(0,0,0,.35); opacity:0; pointer-events:none; transform:translate(-50%,4px); transition:opacity .15s,transform .15s; }
+    .tooltip-button:hover + .tooltip-text,.tooltip-button:focus + .tooltip-text { opacity:1; transform:translate(-50%,0); }
+    .advanced { margin-top:16px; border:1px solid var(--border); border-radius:10px; background:rgba(12,18,36,.5); overflow:hidden; }
+    .advanced summary { padding:12px 14px; color:var(--yellow); font-size:.85rem; font-weight:bold; letter-spacing:.04em; cursor:pointer; list-style:none; }
+    .advanced summary::-webkit-details-marker { display:none; }
+    .advanced summary::after { content:"+"; float:right; color:var(--muted); font-size:1.1rem; line-height:.8; }
+    .advanced[open] summary { border-bottom:1px solid var(--border); }
+    .advanced[open] summary::after { content:"−"; }
+    .advanced-body { padding:0 14px 14px; }
+    .footer { margin-top:20px; }
+    .footer .link-button { width:100%; }
+    .message { grid-column:1 / -1; padding:24px; color:var(--muted); text-align:center; line-height:1.6; }
+    .message.error { border-color:rgba(255,114,128,.55); background:rgba(255,114,128,.1); color:#ffd8dc; }
+    .note { margin-top:18px; padding:12px; border-left:3px solid var(--yellow); background:rgba(247,201,72,.08); color:var(--muted); font-size:.9rem; line-height:1.5; }
+    @media (max-width:1100px) { .filters { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+    @media (max-width:650px) { .filters { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:480px) { .filters { grid-template-columns:1fr; } .bar { align-items:stretch; } .bar button { width:100%; } }
+    .tabs-wrap { width:min(984px,calc(100% - 32px)); margin-left:auto; margin-right:auto; }
+    #aba-mercados { display:grid; grid-template-columns:280px minmax(0,680px); justify-content:center; gap:24px; align-items:start; margin-top:16px; }
+    #aba-mercados .panel { position:sticky; top:16px; margin-bottom:0; }
+    #aba-mercados .filters { grid-template-columns:1fr; }
+    #aba-mercados .actions { flex-direction:column; align-items:stretch; }
+    #aba-mercados .actions .status { display:block; text-align:center; }
+    @media (max-width:900px) { #aba-mercados { grid-template-columns:minmax(0,680px); } #aba-mercados .panel { position:static; } .tabs-wrap { width:min(680px,calc(100% - 32px)); } }
+    .markets { max-width:680px; margin:0; }
+    .card { font-size:1.1rem; }
+    .card .row { font-size:1.05rem; }
+    .card .section-title { font-size:1rem; }
+    .card .highlight { font-size:1.4rem; }
+    .card .score-value { font-size:1.25rem; }
+    .card .link-button { font-size:1.05rem; }
+
+    .tabs-wrap { width:calc(100% - 32px); max-width:none; }
+    #aba-mercados { width:calc(100% - 32px); max-width:none; grid-template-columns:280px minmax(0,1fr) 220px; justify-content:stretch; }
+    .markets { width:100%; max-width:960px; margin:0 auto; }
+    .source-toggle { display:grid; grid-template-columns:1fr 1fr; width:100%; margin:0 0 18px; }
+    .seg-btn { position:relative; display:block; margin:0; cursor:pointer; }
+    .seg-btn input { position:absolute; opacity:0; width:0; height:0; margin:0; }
+    .seg-btn span { display:block; width:100%; padding:10px 12px; border:1px solid var(--border); background:#0c1224; color:var(--muted); font-weight:bold; text-align:center; transition:background .15s,color .15s; }
+    .seg-btn:first-child span { border-radius:8px 0 0 8px; }
+    .seg-btn:last-child span { border-radius:0 8px 8px 0; border-left:0; }
+    .seg-btn.poly input:checked + span { background:var(--blue); border-color:var(--blue); color:#fff; }
+    .seg-btn.kal input:checked + span { background:var(--green); border-color:var(--green); color:#07121c; }
+    .seg-btn input:focus-visible + span { outline:2px solid var(--yellow); outline-offset:2px; }
+    .warn-box { margin:0 0 16px; padding:12px 14px; border:1px solid rgba(255,159,67,.5); border-radius:10px; background:rgba(255,159,67,.08); color:var(--orange); line-height:1.5; word-break:break-word; }
+    #aba-mercados .cats { position:sticky; top:16px; margin-bottom:0; }
+    #aba-mercados .no-stick { position:static; }
+    .cats h2 { margin:0 0 12px; font-size:1rem; }
+    .cat-list { display:flex; flex-direction:column; gap:4px; }
+    .cat-item { display:flex; align-items:center; gap:9px; margin:0; padding:6px 10px; border:1px solid var(--border); border-radius:8px; background:#0c1224; color:var(--text); font-size:.9rem; text-align:left; cursor:pointer; }
+    .cat-item:hover { border-color:var(--blue); }
+    .cat-item input { width:16px; height:16px; margin:0; accent-color:var(--red); flex:0 0 auto; }
+    .cat-item span { flex:1; }
+    .cat-item em { color:var(--muted); font-style:normal; font-size:.78rem; }
+    .cat-item.off { border-color:rgba(255,114,128,.55); background:rgba(255,114,128,.08); }
+    .cat-item.off span { color:var(--red); text-decoration:line-through; }
+    .tg { margin-top:18px; padding-top:16px; border-top:1px solid var(--border); display:grid; gap:10px; }
+    .tg h3 { margin:0; color:var(--yellow); font-size:.85rem; letter-spacing:.04em; text-transform:uppercase; }
+    .tg .tg-row { display:flex; align-items:center; gap:9px; margin:0; color:var(--text); font-size:.9rem; text-align:left; cursor:pointer; }
+    .tg .tg-row input { width:18px; height:18px; margin:0; padding:0; accent-color:var(--blue); }
+    .tg .status { font-size:.82rem; text-align:left; }
+    @media (max-width:1250px) { #aba-mercados { grid-template-columns:260px minmax(0,1fr); } #aba-mercados .cats { grid-column:1 / -1; position:static; } .cat-list { flex-direction:row; flex-wrap:wrap; } }
+    @media (max-width:900px) { #aba-mercados { grid-template-columns:minmax(0,1fr); } .markets { max-width:none; } }
+  
+/* ===== TEMA MINIMALISTA ===== */
+:root{--bg:#0a0a0b;--panel:#111113;--accent:#4f7cff;--accent-ink:#ffffff;--font:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+body:has(#fonte-kalshi:checked){--accent:#a3e635;--accent-ink:#0a0a0b}
+body,button,input{font-family:var(--font)}
+body{background:var(--bg)}
+header{background:var(--bg)}
+.panel,.card,.message,.advanced,.cat-item,.score-card,.warn-box,.tooltip-button,.link-button,button,.secondary,input[type="number"],.seg-btn span{border:1.5px solid var(--accent)}
+input:focus{outline-color:var(--accent)}
+.check-label input,.cat-item input,.tg .tg-row input{accent-color:var(--accent)}
+button,.link-button{background:var(--accent);color:var(--accent-ink)}
+button.secondary{background:transparent;color:var(--accent)}
+.tooltip-button{background:transparent;color:var(--accent)}
+.tooltip-button:hover,.tooltip-button:focus{background:var(--accent);color:var(--accent-ink)}
+.seg-btn span{background:transparent;color:var(--muted)}
+.seg-btn.poly input:checked + span,.seg-btn.kal input:checked + span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.live-badge{display:inline-block;margin:0 0 10px;padding:2px 8px;border:1px solid var(--red);border-radius:999px;color:var(--red);font-size:.72rem;font-weight:bold;letter-spacing:.06em}
+.sim-box{margin-top:16px;padding-top:16px;border-top:1px solid var(--border)}
+.sim-top{display:flex;justify-content:center}
+.sim-top[hidden]{display:none}
+.sim-top .sim-btn{min-width:180px}
+.sim-out .section{margin-top:0;padding-top:0;border-top:0}
+.sim-out .section-title{display:flex;justify-content:space-between;align-items:center}
+.sim-out .sim-close{width:26px;height:26px;padding:0;font-size:.85rem;line-height:1;border-radius:6px;letter-spacing:0;text-transform:none}
+.sim-out .sim-close:hover{background:var(--accent);color:var(--accent-ink)}
+.sim-controls{display:flex;gap:10px;align-items:flex-end;margin:0 0 14px}
+.sim-controls label{flex:1;display:grid;gap:6px;color:var(--muted);font-size:.85rem}
+.sim-controls .sim-input{width:100%}
+/* ===== FILTROS: FAIXA COMPACTA + CATEGORIAS À ESQUERDA ===== */
+#aba-mercados{grid-template-columns:220px minmax(0,1fr);grid-template-areas:"filtros filtros" "cats res";margin-top:8px;column-gap:16px;row-gap:32px}
+#aba-mercados > .panel:first-child{grid-area:filtros;position:relative;z-index:5;padding:6px 10px;margin-bottom:0;border-radius:10px}
+#aba-mercados > #resultados{grid-area:res}
+#aba-mercados > .cats{grid-area:cats}
+#aba-mercados #formulario{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;flex:1 1 auto}
+#aba-mercados .source-toggle{width:190px;margin:0}
+#aba-mercados .seg-btn span{padding:4px 8px;font-size:.78rem;border-radius:6px}
+#aba-mercados .filters{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+#aba-mercados .filters .field{display:flex;flex-direction:row;align-items:center;gap:6px;width:auto}
+#aba-mercados .field label{font-size:.7rem;white-space:nowrap;margin:0}
+#aba-mercados .filters input[type="number"]{width:62px;padding:4px 6px;font-size:.78rem;border-radius:6px}
+#aba-mercados .panel:first-child button{padding:4px 10px;font-size:.78rem;border-radius:6px}
+#aba-mercados .actions{flex:1 1 auto;flex-direction:row;align-items:center;margin-top:0;gap:10px}
+#aba-mercados #tg-toggle{margin-left:auto}
+#aba-mercados .actions .status{display:inline-block;text-align:left;font-size:.78rem;white-space:nowrap}
+#aba-mercados .tg{display:none;position:absolute;right:10px;top:calc(100% + 6px);width:290px;padding:12px;margin:0;border:1.5px solid var(--accent);border-radius:10px;background:var(--panel);box-shadow:0 12px 32px rgba(0,0,0,.6);gap:10px}
+#aba-mercados .tg.open{display:grid}
+#aba-mercados .tg .field{width:100%}
+#aba-mercados .tg input[type="number"]{width:100%}
+@media (max-width:900px){#aba-mercados{grid-template-columns:minmax(0,1fr);grid-template-areas:"filtros" "cats" "res";row-gap:24px}#aba-mercados .tg{left:10px;right:10px;width:auto}}
+
+/* ===== ABAS + ARBITRAGEM ===== */
+#aba-mercados[hidden],#aba-arbitragem[hidden]{display:none}
+.tabs{display:flex;gap:4px;margin-top:10px}
+.tabs .tab{background:transparent;color:var(--muted);border:0;border-bottom:2px solid transparent;border-radius:0;padding:6px 14px;font-size:.85rem}
+.tabs .tab.on{color:var(--text);border-bottom-color:var(--accent)}
+body.tab-arb,body.tab-arb:has(#fonte-kalshi:checked){--accent:#f5c542;--accent-ink:#0a0a0b}
+#aba-arbitragem{width:calc(100% - 32px);max-width:none;margin:8px auto 0}
+.arb-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 12px;margin:0 auto 16px;max-width:960px}
+.arb-bar .field{display:flex;flex-direction:row;align-items:center;gap:6px}
+.arb-bar label{font-size:.72rem;white-space:nowrap;margin:0}
+.arb-bar input[type="number"]{width:70px;padding:4px 6px;font-size:.78rem;border-radius:6px}
+.arb-bar select{background:#0c1224;color:var(--text);border:1.5px solid var(--accent);border-radius:6px;padding:4px 6px;font-size:.78rem;font-family:var(--font)}
+.arb-bar button{padding:4px 12px;font-size:.78rem;border-radius:6px}
+.arb-bar .status{font-size:.78rem}
+.arb-warn{max-width:960px;margin:0 auto 16px;font-size:.8rem}
+.arb-list{display:grid;gap:16px;max-width:960px;margin:0 auto}
+.arb-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.arb-head .arb-ign{padding:3px 10px;font-size:.72rem;border-radius:6px;margin-left:auto}
+.arb-badge{padding:2px 10px;border:1px solid var(--muted);border-radius:999px;color:var(--muted);font-size:.72rem;font-weight:bold;letter-spacing:.06em}
+.arb-badge.win{border-color:var(--green);color:var(--green)}
+.arb-sim{color:var(--muted);font-size:.8rem}
+.arb-names{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px}
+.arb-names .question{font-size:1rem;margin:4px 0 0}
+.arb-src{color:var(--yellow);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}
+@media (max-width:700px){.arb-names{grid-template-columns:1fr}}
+</style>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header><div class="tabs-wrap"><h1>PolyShi Bonding Map</h1><nav class="tabs" aria-label="Abas"><button id="tab-mercados" class="tab on" type="button">Mercados</button><button id="tab-arb" class="tab" type="button">Arbitragem</button></nav></div></header>
+  <main id="aba-mercados" class="container">
+    <section class="panel">
+      
+      
+      <form id="formulario">
+        <div class="source-toggle" role="radiogroup" aria-label="Fonte de mercado">
+          <label class="seg-btn poly"><input id="fonte-polymarket" type="radio" name="fonte" value="polymarket" checked><span>Polymarket</span></label>
+          <label class="seg-btn kal"><input id="fonte-kalshi" type="radio" name="fonte" value="kalshi"><span>Kalshi</span></label>
+        </div>
+        <div class="filters">
+          <div class="field"><label for="dias">Resolução em até (dias)</label><input id="dias" type="number" min="1" max="30" value="7"></div>
+          <div class="field"><label for="prob-min">Probabilidade mínima (%)</label><input id="prob-min" type="number" min="1" max="99" step="0.1" value="90"></div>
+          <div class="field"><label for="prob-max">Probabilidade máxima (%)</label><input id="prob-max" type="number" min="1" max="99" step="0.1" value="99"></div>
+          
+          
+          <input id="orcamento" type="hidden" value="100">
+          
+        </div>
+        <div class="actions"><button id="aplicar" type="submit">Aplicar filtros</button><button id="restaurar" class="secondary" type="button">Restaurar padrão</button><span id="status" class="status">Aguardando consulta...</span><button id="tg-toggle" class="secondary" type="button" aria-expanded="false" aria-controls="tg-box">Telegram</button></div>
+      </form>
+      <div class="tg" id="tg-box">
+        <h3>Alertas Telegram</h3>
+        <label class="tg-row"><input id="tg-on" type="checkbox"> Ativar alertas</label>
+        <div class="field"><label for="tg-min">Score mínimo (0 a 10)</label><input id="tg-min" type="number" min="0" max="10" step="0.1" value="8"></div>
+        <button id="tg-teste" class="secondary" type="button">Enviar teste</button>
+        <p id="tg-status" class="status">Telegram: verificando...</p>
+        <p id="tg-proximo" class="status"></p>
+      </div>
+      
+    </section>
+    
+    <section id="resultados" class="markets"><div class="message">A página foi carregada.</div></section>
+    <aside class="panel cats" aria-label="Esconder">
+      <h2>Esconder</h2>
+      <div id="lista-categorias" class="cat-list"></div>
+    </aside>
+  </main>
+
+  <main id="aba-arbitragem" class="container" hidden>
+    <section class="panel arb-bar">
+      <div class="field"><label for="arb-modo">Casamento</label><select id="arb-modo"><option value="ia" selected>Embeddings (IA)</option><option value="texto">Texto</option></select></div>
+      <div class="field"><label for="arb-dias">Resolução em até (dias)</label><input id="arb-dias" type="number" min="1" max="30" value="7"></div>
+      <div class="field"><label for="arb-sim">Similaridade mín. (%)</label><input id="arb-sim" type="number" min="40" max="100" value="88"></div>
+      <div class="field"><label for="arb-orc">Orçamento (US$)</label><input id="arb-orc" type="number" min="1" step="any" value="100"></div>
+      <label class="check-label"><input id="arb-so" type="checkbox"> Só com lucro</label>
+      <button id="arb-run" type="button">Buscar arbitragem</button>
+      <span id="arb-status" class="status">Aguardando busca...</span>
+    </section>
+    <div class="warn-box arb-warn">Os pares são casados automaticamente (por embeddings de texto ou por palavras). Confira as regras de resolução e o horário de encerramento nas duas plataformas antes de operar: contratos parecidos podem resolver de forma diferente. Os cálculos usam apenas o topo do livro, a taxa da Polymarket do próprio mercado e a taxa de 7% x p x (1 - p) da Kalshi. O modo IA baixa um modelo (cerca de 23 MB) na primeira vez e roda no seu navegador. Use “Não é o mesmo” para esconder um par errado.</div>
+    <section id="arb-res" class="arb-list"><div class="message">Clique em “Buscar arbitragem” para comparar os mercados.</div></section>
+  </main>
+  <script>
+    (function(){
+      "use strict";
+      var TAMANHO_PAGINA=100,TOTAL_DE_PAGINAS=10,MAXIMO_CANDIDATOS_PARA_LIVRO=100,LOTE_LIVROS=20,MAX_PAGINAS=40,busy=false;
+      var formulario=document.getElementById("formulario"),campoDias=document.getElementById("dias"),campoProbMin=document.getElementById("prob-min"),campoProbMax=document.getElementById("prob-max"),campoOrcamento=document.getElementById("orcamento"),botaoAplicar=document.getElementById("aplicar"),botaoRestaurar=document.getElementById("restaurar"),status=document.getElementById("status"),resultados=document.getElementById("resultados");
+      var fontePolymarket=document.getElementById("fonte-polymarket"),fonteKalshi=document.getElementById("fonte-kalshi"),listaCategorias=document.getElementById("lista-categorias"),tgOn=document.getElementById("tg-on"),tgMin=document.getElementById("tg-min"),tgTeste=document.getElementById("tg-teste"),tgStatusEl=document.getElementById("tg-status"),lastRes=null,lastNome="",excluidas={},execId=0;
+      var CACHE={},TTL_LISTA=120000,TTL_LIVRO=60000;
+      function cached(key,ttl,fn){var now=Date.now(),e=CACHE[key];if(e&&now-e.t<ttl)return e.p;for(var k in CACHE)if(now-CACHE[k].t>600000)delete CACHE[k];var p=Promise.resolve().then(fn);p.catch(function(){if(CACHE[key]&&CACHE[key].p===p)delete CACHE[key];});CACHE[key]={t:now,p:p};return p;}
+      var KALSHI_PATH="/trade-api/v2",KALSHI_ROUTES=[{n:"direto (external-api)",u:function(p){return"https://external-api.kalshi.com"+KALSHI_PATH+p;}},{n:"direto (api.elections)",u:function(p){return"https://api.elections.kalshi.com"+KALSHI_PATH+p;}},{n:"proxy local",u:function(p){return"/api/kalshi"+p;}},{n:"allorigins",u:function(p){return"https://api.allorigins.win/raw?url="+encodeURIComponent("https://api.elections.kalshi.com"+KALSHI_PATH+p);}},{n:"codetabs",u:function(p){return"https://api.codetabs.com/v1/proxy/?quest="+encodeURIComponent("https://api.elections.kalshi.com"+KALSHI_PATH+p);}}],kalshiRoute=0,kalshiSeries=null;
+      function esc(v){var e=document.createElement("div");e.textContent=v==null?"":String(v);return e.innerHTML;}
+      function money(v,d){var n=Number(v);if(!isFinite(n))return"Não informado";d=d||0;return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",minimumFractionDigits:d,maximumFractionDigits:d}).format(n);}
+      function pct(v){var n=Number(v);return isFinite(n)?n.toFixed(2)+"%":"Não informado";}
+      function arr(v){if(Array.isArray(v))return v;if(typeof v==="string"){try{var x=JSON.parse(v);return Array.isArray(x)?x:[];}catch(e){return [];}}return [];}
+      function filters(){var d=Number(campoDias.value),a=Number(campoProbMin.value),b=Number(campoProbMax.value),l=10000,s=5,o=Number(campoOrcamento.value);if(!isFinite(d)||d<1||d>30)throw new Error("Informe entre 1 e 30 dias.");if(!isFinite(a)||!isFinite(b)||a<1||b>99||a>b)throw new Error("A probabilidade mínima deve ser menor ou igual à máxima, entre 1% e 99%.");if(!isFinite(l)||l<0)throw new Error("A liquidez mínima deve ser zero ou maior.");if(!isFinite(s)||s<0||s>100)throw new Error("Informe um spread máximo entre 0 e 100 pontos.");if(!isFinite(o)||o<=0)throw new Error("Informe um orçamento maior que zero.");return{dias:d,pmin:a/100,pmax:b/100,probMin:a,probMax:b,liq:l,spreadPts:s,spreadMax:s/100,orcamento:o,exigirProfundidade:false};}
+      function endDate(m){var xs=[m.endDateIso,m.endDate,m.umaEndDateIso,m.umaEndDate];for(var i=0;i<xs.length;i++){if(xs[i]){var d=new Date(xs[i]);if(!isNaN(d.getTime()))return d;}}return null;}
+      function hours(m){var d=endDate(m);return d?(d.getTime()-Date.now())/3600000:null;}
+      function time(h){if(!isFinite(h))return"Não informado";if(h<=0)return"Em resolução";var d=Math.floor(h/24),r=Math.floor(h%24);return d>0?d+"d e "+r+"h":r+"h";}
+      function dateText(m){var d=endDate(m);return d?new Intl.DateTimeFormat("pt-BR",{dateStyle:"medium",timeStyle:"short"}).format(d):"Não informada";}
+      function firstNumber(xs){for(var i=0;i<xs.length;i++){var n=Number(xs[i]);if(isFinite(n)&&n>=0)return n;}return null;}
+      function liquidity(m){var n=firstNumber([m.liquidityClob,m.liquidityNum,m.liquidity,m.liquidityAmm]);return n===null?0:n;}
+      function volume24h(m){return firstNumber([m.volume24hrClob,m.volume24hr,m.volume24Hour,m.volume24h]);}
+      function positions(m){var ns=arr(m.outcomes),ps=arr(m.outcomePrices),ts=arr(m.clobTokenIds),out=[];for(var i=0;i<ns.length;i++){var p=Number(ps[i]);if(isFinite(p))out.push({name:String(ns[i]),price:p,tokenId:ts[i]?String(ts[i]):null});}return out;}
+      function eligible(m,f){var ps=positions(m);for(var i=0;i<ps.length;i++)if(ps[i].price>=f.pmin&&ps[i].price<=f.pmax)return ps[i];return null;}
+      function baseFilter(ms,f){var ok=[],d={received:ms.length,noDate:0,outside:0,lowLiquidity:0,price:0,noToken:0};for(var i=0;i<ms.length;i++){var m=ms[i],h=hours(m),l=liquidity(m),p=eligible(m,f);if(h===null){d.noDate++;continue;}if(h<=0||h>f.dias*24){d.outside++;continue;}if(l<=f.liq){d.lowLiquidity++;continue;}if(!p){d.price++;continue;}if(!p.tokenId){d.noToken++;continue;}ok.push({market:m,position:p});}ok.sort(function(a,b){return liquidity(b.market)-liquidity(a.market);});return{ok:ok,diag:d};}
+      function bestBid(xs){var x=null;for(var i=0;i<xs.length;i++){var p=Number(xs[i].price);if(isFinite(p)&&(x===null||p>x))x=p;}return x;}
+      function bestAsk(xs){var x=null;for(var i=0;i<xs.length;i++){var p=Number(xs[i].price);if(isFinite(p)&&(x===null||p<x))x=p;}return x;}
+      function normalizeAsks(xs){var out=[];for(var i=0;i<xs.length;i++){var p=Number(xs[i].price),s=Number(xs[i].size);if(isFinite(p)&&p>0&&isFinite(s)&&s>0)out.push({price:p,size:s});}out.sort(function(a,b){return a.price-b.price;});return out;}
+      function simulate(asks,budget,t){t=t||{rate:0,exp:1};var left=budget,cost=0,shares=0,fees=0,worst=null;for(var i=0;i<asks.length&&left>0;i++){var level=asks[i],fee=feeShare(level.price,t),unit=level.price+fee,capacity=unit*level.size,spend=Math.min(left,capacity),qty=spend/unit;if(spend>0){cost+=spend;shares+=qty;fees+=qty*fee;left-=spend;worst=level.price;}}var complete=left<0.000001&&cost>0,avg=shares>0?cost/shares:null,payout=shares,profit=payout-cost;return{complete:complete,cost:cost,shares:shares,fees:fees,remaining:left,average:avg,worst:worst,payout:payout,profit:profit,returnPct:cost>0?(profit/cost)*100:null};}
+      function bookSummary(book,f,m){var t=taxaMercado(m);var bids=Array.isArray(book.bids)?book.bids:[],asksRaw=Array.isArray(book.asks)?book.asks:[],bid=bestBid(bids),ask=bestAsk(asksRaw),asks=normalizeAsks(asksRaw);if(bid===null||ask===null)return{available:false,reason:"Livro sem bid ou ask disponível."};var spread=ask-bid;return{available:true,bid:bid,ask:ask,spread:spread,points:spread*100,gross:((1/(ask+feeShare(ask,t)))-1)*100,fee:t,asks:asks,simulation:simulate(asks,f.orcamento,t)};}
+      function getBook(token){return cached("pb:"+token,TTL_LIVRO,function(){return fetch("https://clob.polymarket.com/book?token_id="+encodeURIComponent(token)).then(function(r){if(!r.ok)throw new Error("Livro indisponível: erro "+r.status+".");return r.json();});});}
+      function fetchBooks(cs,f,cb){var i=0;function lote(){if(i>=cs.length)return Promise.resolve(cs);var parte=cs.slice(i,i+LOTE_LIVROS);i+=LOTE_LIVROS;return Promise.all(parte.map(function(c){return getBook(c.position.tokenId).then(function(book){c.book=bookSummary(book,f,c.market);return c;}).catch(function(e){c.book={available:false,reason:e.message};return c;});})).then(function(){if(cb)cb(cs.slice(0,Math.min(i,cs.length)),cs.length);return lote();});}return lote();}
+      function allowed(cs,f){return cs.filter(function(c){if(!c.book||!c.book.available||c.book.spread>f.spreadMax)return false;if(f.exigirProfundidade&&!c.book.simulation.complete)return false;return true;});}
+      function scoreClass(book,f){if(!book||!book.available)return"bad";if(book.spread<=f.spreadMax/2)return"good";return book.spread<=f.spreadMax?"warning":"bad";}
+      function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+      function scoreValue(v,max){return Math.round(clamp(v,0,max));}
+      function taxaMercado(m){var fs=m&&m.feeSchedule;if(typeof fs==="string"){try{fs=JSON.parse(fs);}catch(e){fs=null;}}if(m&&m.feesEnabled===false)return{rate:0,exp:1};if(fs&&fs.rate!==undefined&&fs.rate!==null){var r=Number(fs.rate),x=Number(fs.exponent);return{rate:isFinite(r)?r:0.05,exp:isFinite(x)&&x>0?x:1};}return{rate:0.05,exp:1};}
+      function feeShare(p,t){return t.rate*Math.pow(p*(1-p),t.exp);}
+      function aoVivo(m){if(!m)return false;if(m.live===true)return true;var ev=Array.isArray(m.events)?m.events:[];for(var i=0;i<ev.length;i++)if(ev[i]&&ev[i].live===true)return true;var g=m.gameStartTime||(ev[0]&&ev[0].gameStartTime);if(g){var d=new Date(String(g).replace(" ","T"));if(!isNaN(d.getTime())&&d.getTime()<=Date.now())return true;}return false;}
+      function bondingScore(c,f){var b=c.book,m=c.market,sm=b&&b.simulation;if(!b||!b.available||!sm||sm.cost<=0)return{total:0};return{total:pontuar(Math.max(0,Number(sm.returnPct)||0),hours(m),liquidity(m),volume24h(m),f)};}
+      function acuracia(h){if(h===null||!isFinite(h))return"Não informado";var v=h<=4?98.6:h<=12?97.1:h<=24?96.4:h<=168?94.2:90.1;return v.toFixed(1)+"%";}
+      function scoreHtml(score){return'<div class="score-card"><span class="score-value">'+Number(score.total).toFixed(1)+'/10</span></div>';}
+      function marketUrl(m){return m.slug?"https://polymarket.com/market/"+encodeURIComponent(m.slug):null;}
+      function simHtml(s,f){if(!s||s.cost<=0)return'<div class="section"><h3 class="section-title">Simulação de profundidade</h3><div class="row"><span>Simulação</span><strong class="bad">Sem asks utilizáveis</strong></div></div>';var state=s.complete?"depth-ok":"depth-low",label=s.complete?"Orçamento coberto pelo livro":"Profundidade insuficiente";return'<div class="section '+state+'"><h3 class="section-title">Simulação</h3><div class="details">'+(s.complete?'':'<div class="row"><span>Status</span><strong class="warning">'+label+'</strong></div>')+'<div class="row"><span>Custo</span><strong>'+money(s.cost,2)+'</strong></div><div class="row"><span>Share</span><strong>'+s.shares.toFixed(2)+'</strong></div><div class="row"><span>Preço médio</span><strong>'+money(s.average,3)+'</strong></div><div class="row"><span>Payout</span><strong>'+money(s.payout,2)+'</strong></div><div class="row"><span>Lucro (após taxas)</span><strong class="good">'+money(s.profit,2)+' ('+pct(s.returnPct)+')</strong></div>'+(s.complete?'':'<div class="row"><span>Orçamento não alocado</span><strong class="warning">'+money(s.remaining,2)+'</strong></div>')+'</div></div>';}
+      var SIMS={},SIMOUT={},SIMBUD={},SIMOPEN=null;
+      function simBox(key,kind,asks,fee,f,ex){SIMS[key]=Object.assign({kind:kind,asks:asks,fee:fee,def:f.orcamento},ex||{});var open=SIMOPEN===key;return'<div class="sim-box" data-sim="'+esc(key)+'"><div class="sim-top"'+(open?' hidden':'')+'><button type="button" class="sim-btn">Simular</button></div><div class="sim-out">'+(open&&SIMOUT[key]?SIMOUT[key]:'')+'</div></div>';}
+      function simCtrl(val){return'<div class="sim-controls"><label>Valor (US$)<input type="number" class="sim-input" min="0.01" step="any" value="'+esc(val)+'"></label><button type="button" class="sim-calc">Simular</button></div>';}
+      function simWrap(html,val){return html.replace('</h3>','<button type="button" class="sim-close secondary" aria-label="Fechar simulação" title="Fechar">&#10005;</button></h3>'+simCtrl(val));}
+      function calcSim(box,v){var key=box.getAttribute("data-sim"),d=SIMS[key],out=box.querySelector(".sim-out");if(!d)return;var val=v!==undefined?v:(SIMBUD[key]!==undefined?SIMBUD[key]:d.def),b=Number(val),html;if(!isFinite(b)||b<=0){html=simWrap('<div class="section"><h3 class="section-title">Simulação</h3><div class="details"><div class="row"><span>Erro</span><strong class="bad">Informe um valor maior que zero.</strong></div></div></div>',val);}else{SIMBUD[key]=String(val);if(d.kind==="poly"){html=simHtml(simulate(d.asks,b,d.fee),null);}else{html=kalshiBookHtml({available:true,bid:d.bid,ask:d.ask,spread:d.spread,topOnly:d.topOnly,simulation:kalshiSimulate(d.asks,b)});}html=simWrap(html,val);}SIMOUT[key]=html;out.innerHTML=html;var i=out.querySelector(".sim-input");if(i&&v!==undefined){i.focus();}}
+      function abrirSim(box){var key=box.getAttribute("data-sim");Array.prototype.forEach.call(resultados.querySelectorAll(".sim-box"),function(x){if(x!==box)fecharSim(x,true);});SIMOPEN=key;box.querySelector(".sim-top").hidden=true;calcSim(box);}
+      function fecharSim(box,keep){var key=box.getAttribute("data-sim");if(!keep)SIMOPEN=null;box.querySelector(".sim-out").innerHTML="";box.querySelector(".sim-top").hidden=false;delete SIMOUT[key];}
+      var alertaHora=false;
+      function card(c,f){var m=c.market,p=c.position,b=c.book,q=esc(m.question||"Mercado sem título"),name=esc(p.name),v=volume24h(m),score=bondingScore(c,f),bookHtml;if(b&&b.available){bookHtml=simBox("p:"+p.tokenId,"poly",b.asks,b.fee,f);}else{bookHtml='<div class="section"><h3 class="section-title">Livro CLOB</h3><div class="row"><span>Consulta do livro</span><strong class="bad">'+esc(b&&b.reason?b.reason:"Não disponível")+'</strong></div></div>';}
+        var url=marketUrl(m),title=url?'<a class="market-link" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" aria-label="Abrir mercado na Polymarket">'+q+'</a>':q;
+        return'<article class="card"><div class="title-row">'+scoreHtml(score)+'<h2 class="question">'+title+'</h2></div>'+(aoVivo(m)?'<div class="live-badge">● AO VIVO</div>':'')+'<div class="highlights"><div class="highlight '+(/^(yes|sim)$/i.test(String(p.name))?"positive":"negative")+'">'+name+' '+(p.price*100).toFixed(1)+'%</div></div><div class="details"><div class="row"><span>Resolve em</span><strong>'+esc(time(hours(m)))+' ('+esc(dateText(m))+')</strong></div><div class="row"><span>Liquidez informada</span><strong>'+money(liquidity(m))+'</strong></div><div class="row"><span>Volume em 24h</span><strong>'+(v===null?"Não informado":money(v))+'</strong></div><div class="row"><span>Acurácia</span><strong>'+acuracia(hours(m))+'</strong></div></div>'+bookHtml+'</article>';}
+      function pontuar(ret,h,liq,vol,f){function lg(x,ref){return clamp(Math.log(1+Math.max(0,Number(x)||0))/Math.log(1+ref),0,1);}return 4*clamp((Number(ret)||0)/10,0,1)+3*(1-clamp((h===null||!isFinite(h)?0:Math.max(0,h))/(f.dias*24),0,1))+2*lg(liq,100000)+1*lg(vol,100000);}
+      var CATEGORIAS=["Politics","Sports","Crypto","Esports","Iran","Finance","Geopolitics","Tech","Culture","Economy","Weather","Mentions","Elections","Art"];
+      var PADROES={Politics:/\b(president|presidential|senate|senator|congress|house of representatives|trump|biden|harris|vance|democrat|republican|gop|governor|parliament|prime minister|white house|supreme court|cabinet|impeach|speaker of the house|executive order|shutdown|veto)\b/i,Sports:/\b(nba|nfl|mlb|nhl|wnba|ncaa|soccer|football|fifa|premier league|uefa|champions league|europa league|la liga|serie a|bundesliga|ligue 1|tennis|atp|wta|wimbledon|us open|french open|ufc|mma|boxing|f1|formula 1|grand prix|olympic|olympics|world cup|golf|pga|masters|cricket|ipl|rugby|super bowl|stanley cup|world series|playoffs?|touchdown|vs\.?)\b/i,Crypto:/\b(bitcoin|btc|ethereum|eth|solana|sol|crypto|cryptocurrency|xrp|ripple|dogecoin|doge|token|coinbase|binance|stablecoin|altcoin|memecoin|defi|nft|airdrop|fdv)\b/i,Esports:/\b(esports?|league of legends|lol|dota|dota 2|counter-strike|cs2|csgo|valorant|overwatch|call of duty|rocket league|starcraft|t1|blast|iem|pgl|lck|lpl)\b/i,Iran:/\b(iran|iranian|tehran|khamenei|irgc|persian gulf|strait of hormuz)\b/i,Finance:/\b(stocks?|s&p|s&p 500|spx|nasdaq|dow jones|equities|earnings|ipo|market cap|treasury|bond yield|yield|forex|usd|eur|gold|silver|oil|crude|brent|wti|nvidia|nvda|tesla|tsla|apple|aapl|microsoft|msft|amazon|amzn|close (above|below|at)|shares|etf|vix)\b/i,Geopolitics:/\b(war|ukraine|russia|russian|israel|gaza|hamas|hezbollah|china|taiwan|nato|ceasefire|sanctions?|putin|zelensky|north korea|kim jong|missile|invasion|nuclear|syria|yemen|houthi|venezuela|border|annex|treaty|un security council)\b/i,Tech:/\b(ai|a\.i\.|openai|gpt|chatgpt|gemini|claude|anthropic|google|meta|spacex|starship|elon musk|musk|iphone|android|software|robot|robotaxi|chip|semiconductor|tiktok|x\.com|twitter|launch|model|llm|quantum|satellite)\b/i,Culture:/\b(movie|film|oscars?|academy awards|grammys?|emmys?|golden globes?|box office|album|song|billboard|spotify|taylor swift|beyonce|netflix|celebrity|tv show|series|season|streaming|actor|actress|singer|rapper|concert|tour|podcast|youtube|mrbeast|kardashian|reality)\b/i,Economy:/\b(inflation|cpi|pce|gdp|unemployment|jobs report|nonfarm|payrolls?|recession|fomc|fed|federal reserve|interest rates?|rate cuts?|rate hike|tariffs?|economy|economic|mortgage|housing|retail sales|consumer sentiment|debt ceiling|deficit)\b/i,Weather:/\b(weather|temperature|temp|degrees|high temp|low temp|hurricane|tropical storm|typhoon|tornado|snow|snowfall|rain|rainfall|precipitation|heat wave|storm|blizzard|wildfire|earthquake|climate|el nino|la nina)\b/i,Mentions:/\b(say|says|said|mention|mentions|mentioned|word|words|phrase|tweets?|posts?)\b/i,Elections:/\b(election|elections|primary|primaries|nominee|nomination|ballot|runoff|mayor|mayoral|midterms?|electoral|polls?|vote share|turnout|winner of the .* (race|election)|governor race|senate race|presidential race)\b/i,Art:/\b(art|artist|painting|paintings|museum|sculpture|gallery|auction|christie'?s|sotheby'?s|banksy|picasso|exhibit|exhibition|nft art)\b/i};
+      var MAPA_ROTULOS=[[/politic/,"Politics"],[/sport/,"Sports"],[/crypto/,"Crypto"],[/esport|gaming/,"Esports"],[/iran/,"Iran"],[/financ|compan|stock|business/,"Finance"],[/geopolit|world|global/,"Geopolitics"],[/tech|science|\bai\b/,"Tech"],[/cultur|entertain|pop|music|movie|celebr/,"Culture"],[/econom|inflation|fed/,"Economy"],[/weather|climate|temperature/,"Weather"],[/mention/,"Mentions"],[/election/,"Elections"],[/\bart\b|arts/,"Art"]];
+      function rotulosDe(vals){var out=[];function add(v){if(v==null)return;if(typeof v==="string")out.push(v.toLowerCase());else if(Array.isArray(v))v.forEach(add);else if(typeof v==="object"){add(v.label);add(v.slug);add(v.name);add(v.category);add(v.tags);}}add(vals);return out;}
+      function categoriasDe(texto,rotulos){var set={};for(var i=0;i<rotulos.length;i++)for(var j=0;j<MAPA_ROTULOS.length;j++)if(MAPA_ROTULOS[j][0].test(rotulos[i]))set[MAPA_ROTULOS[j][1]]=true;for(var k=0;k<CATEGORIAS.length;k++){var c=CATEGORIAS[k];if(PADROES[c].test(texto))set[c]=true;}return Object.keys(set);}
+      function catsPolymarket(m){var ev=Array.isArray(m.events)?m.events:[],texto=[m.question,m.slug,m.groupItemTitle].concat(ev.map(function(e){return e&&e.title;})).join(" "),rot=rotulosDe([m.category,m.categories,m.tags,ev.map(function(e){return e&&[e.category,e.categories,e.tags];})]);return categoriasDe(texto,rot);}
+      function catsKalshi(m){var serie=String(m.event_ticker||m.ticker||"").split("-")[0],info=kalshiSeries&&kalshiSeries[serie],rot=rotulosDe([info&&info.category,info&&info.tags,m.category]),texto=[m.title,m.yes_sub_title,m.no_sub_title,m.subtitle,info&&info.title].join(" ");return categoriasDe(texto,rot);}
+      function carregarSeriesKalshi(){return cached("kal:series",1800000,function(){return kalshiRequest("/series").then(function(d){var map={},xs=Array.isArray(d&&d.series)?d.series:[];xs.forEach(function(s){if(s&&s.ticker)map[s.ticker]=s;});return map;}).catch(function(){return{};});}).then(function(map){kalshiSeries=map;return map;});}
+      function montarCategorias(){listaCategorias.innerHTML=CATEGORIAS.map(function(c){return'<label class="cat-item" data-cat="'+c+'"><input type="checkbox" value="'+c+'"><span>'+c+'</span><em id="cnt-'+c+'">0</em></label>';}).join("");}
+      function atualizarContagem(){CATEGORIAS.forEach(function(c){var el=document.getElementById("cnt-"+c),n=0;if(lastRes)lastRes.cards.forEach(function(x){if(x.cats.indexOf(c)>=0)n++;});if(el)el.textContent=n;});}
+      function marcarItens(){var itens=listaCategorias.querySelectorAll(".cat-item");for(var i=0;i<itens.length;i++){var c=itens[i].getAttribute("data-cat"),off=!!excluidas[c];itens[i].classList.toggle("off",off);itens[i].querySelector("input").checked=off;}}
+      function sincronizarAlturas(){return;var esq=document.querySelector("#aba-mercados > section.panel"),dir=document.querySelector("#aba-mercados > .cats");if(!esq||!dir)return;esq.style.minHeight="";dir.style.minHeight="";esq.classList.remove("no-stick");dir.classList.remove("no-stick");if(window.matchMedia("(max-width:1250px)").matches)return;var h=Math.max(esq.offsetHeight,dir.offsetHeight);esq.style.minHeight=h+"px";dir.style.minHeight=h+"px";if(h>window.innerHeight-32){esq.classList.add("no-stick");dir.classList.add("no-stick");}}
+      function agendarSync(){if(window.requestAnimationFrame)window.requestAnimationFrame(sincronizarAlturas);else sincronizarAlturas();}
+      var tgCfg={on:false,min:8},tgSeen={},tgOk=false;
+      function tgSalvar(){try{localStorage.setItem("tgCfg",JSON.stringify(tgCfg));localStorage.setItem("tgSeen",JSON.stringify(tgSeen));}catch(e){}}
+      function tgCarregar(){try{var c=JSON.parse(localStorage.getItem("tgCfg")||"{}");if(typeof c.on==="boolean")tgCfg.on=c.on;if(isFinite(Number(c.min)))tgCfg.min=Number(c.min);var s=JSON.parse(localStorage.getItem("tgSeen")||"{}"),now=Date.now();for(var k in s)if(now-s[k]<86400000)tgSeen[k]=s[k];}catch(e){}tgOn.checked=tgCfg.on;tgMin.value=tgCfg.min;}
+      function tgMsg(t){tgStatusEl.textContent=t;agendarSync();}
+      function tgVerificar(){return fetch("/api/telegram/status").then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}).then(function(d){tgOk=!!(d&&d.configured);tgMsg(tgOk?"Telegram: pronto para enviar.":"Telegram: defina o token e o chat ID no servidor.");}).catch(function(){tgOk=false;tgMsg("Telegram: abra a página por http://localhost:3000 (node server.js).");});}
+      function tgEnviar(texto){return fetch("/api/telegram/send",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:texto})}).then(function(r){return r.json().catch(function(){return{ok:false,error:"HTTP "+r.status};});}).then(function(d){if(!d||!d.ok)throw new Error(d&&d.error?d.error:"erro desconhecido");return d;});}
+      function hx(v){return String(v==null?"":v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+      function tgLinha(n,a){var ret=Number(a.retorno);return n+'. <a href="'+hx(a.url)+'">'+hx(a.titulo)+'</a>\n    '+hx(a.lado)+' '+(Number(a.preco)*100).toFixed(1)+'% · Score '+Number(a.score).toFixed(1)+'/10'+(isFinite(ret)?' · Retorno '+(ret>=0?'+':'')+ret.toFixed(1)+'%':'')+' · Resolve em '+hx(a.resolve);}
+      function enviarAlertas(r,nome){if(!tgCfg.on||!tgOk||!r||!r.cards)return;var now=Date.now(),novos=r.cards.filter(function(x){var a=x.alerta;if(!a||!(a.score>=tgCfg.min))return false;for(var i=0;i<x.cats.length;i++)if(excluidas[x.cats[i]])return false;var t=tgSeen[a.key];return !(t&&now-t<86400000);}).sort(function(a,b){return b.alerta.score-a.alerta.score;}).slice(0,5);if(!novos.length)return;var linhas=novos.map(function(x,i){return tgLinha(i+1,x.alerta);}),texto='<b>🔔 '+hx(nome)+': '+novos.length+(novos.length===1?' mercado':' mercados')+' com Score ≥ '+tgCfg.min+'</b>\n\n'+linhas.join('\n\n');tgEnviar(texto).then(function(){novos.forEach(function(x){tgSeen[x.alerta.key]=Date.now();});tgSalvar();var h=new Date();tgMsg("Telegram: "+novos.length+" alerta(s) enviado(s) às "+h.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})+".");}).catch(function(e){tgMsg("Telegram: falha ao enviar — "+e.message);});}
+      function renderResultado(){if(!lastRes)return;var r=lastRes,nome=lastNome,warn=r.note?'<div class="warn-box">'+esc(r.note)+'</div>':'',vis=r.cards.filter(function(x){for(var i=0;i<x.cats.length;i++)if(excluidas[x.cats[i]])return false;return true;}),ocultos=r.cards.length-vis.length;atualizarContagem();if(vis.length){resultados.innerHTML=warn+vis.map(function(x){return x.html;}).join("");status.textContent=vis.length+(vis.length===1?" mercado compatível":" mercados compatíveis")+" ("+nome+")"+(ocultos?" — "+ocultos+" omitido(s)":"");}else{resultados.innerHTML=warn+'<div class="message">'+(r.cards.length?"Todos os mercados foram omitidos pelas categorias selecionadas.":"Nenhum mercado compatível na "+nome+".")+'</div>';status.textContent=r.cards.length?"Todos os "+r.cards.length+" mercado(s) foram omitidos.":"Nenhum mercado compatível.";}agendarSync();}
+      function kalshiRequest(path){var start=kalshiRoute,errs=[];function tentar(i){if(i>=KALSHI_ROUTES.length)return Promise.reject(new Error(errs.join(" | ")));var idx=(start+i)%KALSHI_ROUTES.length,r0=KALSHI_ROUTES[idx];return fetch(r0.u(path),{headers:{"Accept":"application/json"}}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}).then(function(d){if(!d||typeof d!=="object")throw new Error("resposta inválida");kalshiRoute=idx;return d;}).catch(function(e){errs.push(r0.n+": "+(e.message==="Failed to fetch"?"bloqueado (CORS/rede)":e.message));return tentar(i+1);});}return tentar(0);}
+      function kalshiMarkets(f){return cached("kal:mercados:"+f.dias,TTL_LISTA,function(){var min=Math.floor(Date.now()/1000),max=min+Math.floor(f.dias*86400),all=[];function next(cursor,page){var q="?limit=1000&min_close_ts="+min+"&max_close_ts="+max+"&mve_filter=exclude"+(cursor?"&cursor="+encodeURIComponent(cursor):"");return kalshiRequest("/markets"+q).then(function(d){var ms=Array.isArray(d.markets)?d.markets:[];all=all.concat(ms);return d.cursor&&ms.length&&page<20?next(d.cursor,page+1):all;});}return next("",1);});}
+      function kalshiNum(v){var n=Number(v);return isFinite(n)?n:null;}
+      function kalshiLiquidity(m){var n=firstNumber([m.liquidity_dollars,m.liquidity]);if(n!==null&&n>0)return n;var b=kalshiNum(m.yes_bid_dollars)||0,a=kalshiNum(m.yes_ask_dollars)||0,bs=kalshiNum(m.yes_bid_size_fp)||0,as=kalshiNum(m.yes_ask_size_fp)||0;return b*bs+a*as;}
+      function kalshiYesPrice(m){var a=kalshiNum(m.yes_ask_dollars),l=kalshiNum(m.last_price_dollars),b=kalshiNum(m.yes_bid_dollars);if(a!==null&&a>0)return a;if(l!==null&&l>0)return l;if(b!==null&&b>0)return b;return null;}
+      function kalshiOpen(m){var s=String(m.status||"").toLowerCase();return s==="active"||s==="open";}
+      function kalshiCandidates(ms,f){var now=Date.now(),max=now+f.dias*86400000,d={received:ms.length,closed:0,price:0,date:0};var ok=ms.filter(function(m){if(!kalshiOpen(m)){d.closed++;return false;}var t=new Date(m.close_time).getTime();if(!isFinite(t)||t<=now||t>max){d.date++;return false;}var p=kalshiYesPrice(m);if(p===null||p<f.pmin||p>f.pmax){d.price++;return false;}return true;}).sort(function(a,b){return kalshiLiquidity(b)-kalshiLiquidity(a);}).slice(0,MAXIMO_CANDIDATOS_PARA_LIVRO);return{ok:ok,diag:d};}
+      function kalshiLevels(xs){return(Array.isArray(xs)?xs:[]).map(function(x){return{price:Number(x[0]),size:Number(x[1])};}).filter(function(x){return isFinite(x.price)&&x.price>0&&isFinite(x.size)&&x.size>0;}).sort(function(a,b){return b.price-a.price;});}
+      function kalshiSimulate(asks,budget){var left=budget,cost=0,shares=0;for(var i=0;i<asks.length&&left>0.000001;i++){var x=asks[i],spend=Math.min(left,x.price*x.size);cost+=spend;shares+=spend/x.price;left-=spend;}return{complete:left<=0.000001&&cost>0,cost:cost,shares:shares,remaining:left,average:shares?cost/shares:null,returnPct:cost?((shares-cost)/cost)*100:null};}
+      function kalshiTopBook(m,f){var bid=kalshiNum(m.yes_bid_dollars),ask=kalshiNum(m.yes_ask_dollars),size=kalshiNum(m.yes_ask_size_fp);if(!(bid>0)||!(ask>0)||ask>=1)return{available:false,reason:"Sem bid/ask de YES no mercado."};return{available:true,bid:bid,ask:ask,spread:ask-bid,asks:[{price:ask,size:size>0?size:1e9}],simulation:kalshiSimulate([{price:ask,size:size>0?size:1e9}],f.orcamento),topOnly:size>0?"Somente topo do livro (orderbook indisponível)":"Somente preço (sem tamanho informado)"};}
+      function kalshiBook(m,f){return cached("kb:"+m.ticker,TTL_LIVRO,function(){return kalshiRequest("/markets/"+encodeURIComponent(m.ticker)+"/orderbook?depth=100");}).then(function(raw){var ob=raw&&raw.orderbook_fp?raw.orderbook_fp:{},bids=kalshiLevels(ob.yes_dollars),asks=kalshiLevels(ob.no_dollars).map(function(x){return{price:1-x.price,size:x.size};}).filter(function(x){return x.price>0&&x.price<1;}).sort(function(a,b){return a.price-b.price;});if(!bids.length||!asks.length)return kalshiTopBook(m,f);return{available:true,bid:bids[0].price,ask:asks[0].price,spread:asks[0].price-bids[0].price,asks:asks,simulation:kalshiSimulate(asks,f.orcamento)};}).catch(function(){return kalshiTopBook(m,f);});}
+      function kalshiBooks(ms,f,cb){var i=0,lote=10;function next(){if(i>=ms.length)return Promise.resolve(ms);var part=ms.slice(i,i+lote);i+=lote;return Promise.all(part.map(function(m){return kalshiBook(m,f).then(function(b){m.book=b;return m;});})).then(function(){if(cb)cb(ms.slice(0,Math.min(i,ms.length)),ms.length);return next();});}return next();}
+      function kalshiScore(m,f){var s=m.book&&m.book.simulation;if(!m.book||!m.book.available||!s||!s.cost)return 0;var h=(new Date(m.close_time).getTime()-Date.now())/3600000;return pontuar(Math.max(0,s.returnPct||0),h,kalshiLiquidity(m),kalshiNum(m.volume_24h_fp)||0,f);}
+      function kalshiBookHtml(b){if(!b||!b.available)return'<div class="section"><h3 class="section-title">Livro Kalshi</h3><div class="row"><span>Consulta</span><strong class="bad">'+esc(b&&b.reason?b.reason:"Indisponível")+'</strong></div></div>';var s=b.simulation;return'<div class="section '+(s.complete?"depth-ok":"depth-low")+'"><h3 class="section-title">Simulação</h3><div class="details">'+(b.topOnly?'<div class="row"><span>Aviso</span><strong class="warning">'+esc(b.topOnly)+'</strong></div>':'')+'<div class="row"><span>Melhor bid / ask</span><strong>'+money(b.bid,3)+' / '+money(b.ask,3)+'</strong></div><div class="row"><span>Spread</span><strong>'+(b.spread*100).toFixed(1)+'¢</strong></div><div class="row"><span>Custo</span><strong>'+money(s.cost,2)+'</strong></div><div class="row"><span>Contratos</span><strong>'+s.shares.toFixed(2)+'</strong></div><div class="row"><span>Preço médio</span><strong>'+money(s.average,3)+'</strong></div><div class="row"><span>Retorno bruto se YES</span><strong class="good">'+pct(s.returnPct)+'</strong></div>'+(s.complete?'':'<div class="row"><span>Orçamento não alocado</span><strong class="warning">'+money(s.remaining,2)+'</strong></div>')+'</div></div>';}
+      function kalshiCard(m,f){var p=kalshiYesPrice(m),s=kalshiScore(m,f),d=new Date(m.close_time),title=esc(m.title||m.yes_sub_title||m.ticker),v=kalshiNum(m.volume_24h_fp);return'<article class="card"><div class="title-row"><div class="score-card"><span class="score-value">'+s.toFixed(1)+'/10</span></div><h2 class="question"><a class="market-link" href="https://kalshi.com/markets/'+encodeURIComponent(m.ticker)+'" target="_blank" rel="noopener noreferrer">'+title+'</a></h2></div><div class="highlights"><div class="highlight positive">YES '+(p*100).toFixed(1)+'%</div></div><div class="details"><div class="row"><span>Resolve em</span><strong>'+esc(time((d.getTime()-Date.now())/3600000))+' ('+esc(new Intl.DateTimeFormat("pt-BR",{dateStyle:"medium",timeStyle:"short"}).format(d))+')</strong></div><div class="row"><span>Liquidez informada</span><strong>'+money(kalshiLiquidity(m))+'</strong></div><div class="row"><span>Volume em 24h</span><strong>'+(v===null?"Não informado":money(v))+'</strong></div><div class="row"><span>Acurácia</span><strong>'+acuracia((d.getTime()-Date.now())/3600000)+'</strong></div></div>'+(m.book&&m.book.available?simBox("k:"+m.ticker,"kalshi",m.book.asks,null,f,{bid:m.book.bid,ask:m.book.ask,spread:m.book.spread,topOnly:m.book.topOnly}):kalshiBookHtml(m.book))+'</article>';}
+      function alertaKalshi(m,f){return{key:"kal:"+m.ticker,titulo:m.title||m.yes_sub_title||m.ticker,url:"https://kalshi.com/markets/"+encodeURIComponent(m.ticker),score:kalshiScore(m,f),lado:"YES",preco:kalshiYesPrice(m),retorno:m.book&&m.book.simulation?m.book.simulation.returnPct:null,resolve:time((new Date(m.close_time).getTime()-Date.now())/3600000)};}
+      function alertaPoly(c,f){var m=c.market;return{key:"poly:"+(m.id||m.conditionId||m.slug||m.question),titulo:m.question||"Mercado sem título",url:marketUrl(m)||"https://polymarket.com",score:bondingScore(c,f).total,lado:c.position.name,preco:c.position.price,retorno:c.book&&c.book.simulation?c.book.simulation.returnPct:null,resolve:time(hours(m))};}
+      function loadKalshi(f,cbp){function monta(done,note){var ok=done.filter(function(m){return m.book&&m.book.available;}).sort(function(a,b){return kalshiScore(b,f)-kalshiScore(a,f);});return{cards:ok.map(function(m){return{html:kalshiCard(m,f),cats:catsKalshi(m),alerta:alertaKalshi(m,f)};}),note:ok.length?"":note};}return kalshiMarkets(f).then(function(ms){var x=kalshiCandidates(ms,f);if(!x.ok.length)return{cards:[],note:"Kalshi: "+x.diag.received+" mercados recebidos; nenhum passou (fora do prazo: "+x.diag.date+", probabilidade fora da faixa: "+x.diag.price+", não abertos: "+x.diag.closed+")."};return carregarSeriesKalshi().then(function(){return kalshiBooks(x.ok,f,function(feitos,total){if(cbp)cbp(monta(feitos,""),feitos.length,total);});}).then(function(done){return monta(done,"Kalshi: "+x.ok.length+" candidatos, mas nenhum com bid/ask utilizável.");});});}
+      function loadPolymarket(f,cbp){function monta(done,note){var ok=allowed(done,f).sort(function(a,b){return bondingScore(b,f).total-bondingScore(a,f).total;});return{cards:ok.map(function(c){return{html:card(c,f),cats:catsPolymarket(c.market),alerta:alertaPoly(c,f)};}),note:ok.length?"":note};}return cached("poly:mercados:"+f.dias,TTL_LISTA,function(){return buscarMercados(f);}).then(function(ms){ms=ms.filter(function(m){return m&&m.active!==false&&m.closed!==true;});var x=baseFilter(ms,f);if(!x.ok.length)return{cards:[],note:"Polymarket: nenhum mercado passou nos filtros iniciais."};return fetchBooks(x.ok.slice(0,MAXIMO_CANDIDATOS_PARA_LIVRO),f,function(feitos,total){if(cbp)cbp(monta(feitos,""),feitos.length,total);}).then(function(done){return monta(done,"Polymarket: nenhum candidato passou nos filtros do livro.");});});}
+      function loading(on){busy=on;botaoAplicar.disabled=on;botaoRestaurar.disabled=on;fontePolymarket.disabled=on;fonteKalshi.disabled=on;botaoAplicar.textContent=on?"Aplicando...":"Aplicar filtros";}
+      function showError(msg){resultados.innerHTML='<div class="message error"><strong>Não foi possível carregar os mercados.</strong><br>'+esc(msg)+'</div>';status.textContent="Ocorreu um erro na consulta.";}
+      function showNoneBase(d,f){resultados.innerHTML='<div class="message">Nenhum mercado chegou à etapa de consulta do livro CLOB.<br><br><strong>Critérios iniciais:</strong><br>Resolução em até '+f.dias+' dia(s)<br>Probabilidade entre '+f.probMin+'% e '+f.probMax+'%<br>Liquidez superior a '+money(f.liq)+'<br><br><strong>Diagnóstico:</strong><br>Recebidos da API: '+d.received+'<br>Sem data válida: '+d.noDate+'<br>Fora da janela: '+d.outside+'<br>Liquidez insuficiente: '+d.lowLiquidity+'<br>Probabilidade fora da faixa: '+d.price+'<br>Sem token CLOB: '+d.noToken+'</div>';}
+      function showNoneBook(cs,f){var noBook=cs.filter(function(c){return !c.book||!c.book.available;}).length,high=cs.filter(function(c){return c.book&&c.book.available&&c.book.spread>f.spreadMax;}).length,shallow=cs.filter(function(c){return c.book&&c.book.available&&!c.book.simulation.complete;}).length;resultados.innerHTML='<div class="message">Nenhum candidato passou em todos os filtros do livro CLOB.<br><br><strong>Condições atuais:</strong><br>Spread máximo: '+f.spreadPts.toFixed(1)+' pontos ('+money(f.spreadMax,3)+')<br>Orçamento simulado: '+money(f.orcamento,2)+'<br><br>Candidatos consultados: '+cs.length+'<br>Livros indisponíveis: '+noBook+'<br>Spread acima do limite: '+high+'<br>Profundidade insuficiente: '+shallow+'</div>';}
+      function pageUrl(p,dmin,dmax){return "https://gamma-api.polymarket.com/markets?active=true&closed=false&limit="+TAMANHO_PAGINA+"&offset="+(p*TAMANHO_PAGINA)+"&end_date_min="+encodeURIComponent(dmin)+"&end_date_max="+encodeURIComponent(dmax);}
+      function page(p,dmin,dmax){return fetch(pageUrl(p,dmin,dmax)).then(function(r){if(!r.ok)throw new Error("A API respondeu com erro "+r.status+" na página "+(p+1)+".");return r.json();});}
+      function buscarMercados(f){var agora=new Date(),dmin=agora.toISOString(),dmax=new Date(agora.getTime()+f.dias*86400000).toISOString();
+        function keyset(){var todos=[],n=0;function proxima(cur){var u="https://gamma-api.polymarket.com/markets/keyset?closed=false&limit="+TAMANHO_PAGINA+"&end_date_min="+encodeURIComponent(dmin)+"&end_date_max="+encodeURIComponent(dmax)+(cur?"&after_cursor="+encodeURIComponent(cur):"");return fetch(u).then(function(r){if(!r.ok)throw new Error("Erro "+r.status+" na busca por cursor.");return r.json();}).then(function(d){var ms=Array.isArray(d)?d:((d&&d.markets)||[]);todos=todos.concat(ms);n++;if(d&&d.next_cursor&&ms.length&&n<MAX_PAGINAS)return proxima(d.next_cursor);return todos;});}return proxima(null);}
+        function legado(){var jobs=[];for(var p=0;p<TOTAL_DE_PAGINAS;p++)jobs.push(page(p,dmin,dmax));return Promise.all(jobs).then(function(pages){var ms=[];for(var i=0;i<pages.length;i++)if(Array.isArray(pages[i]))ms=ms.concat(pages[i]);return ms;});}
+        return keyset().catch(function(e){console.warn("Busca por cursor indisponível; usando paginação por offset.",e);return legado();});}
+      function load(){var f;try{f=filters();}catch(err){showError(err.message);return;}var usaKalshi=fonteKalshi.checked,nome=usaKalshi?"Kalshi":"Polymarket",id=++execId;loading(true);lastRes=null;atualizarContagem();status.textContent="Consultando "+nome+"...";resultados.innerHTML='<div class="message">Carregando mercados da '+nome+'...</div>';agendarSync();
+        function parcial(r,feitos,total){if(id!==execId||!r.cards.length)return;lastRes=r;lastNome=nome;renderResultado();status.textContent=status.textContent+" — analisando livros: "+feitos+"/"+total;}
+        (usaKalshi?loadKalshi(f,parcial):loadPolymarket(f,parcial)).then(function(r){if(id!==execId)return;lastRes=r;lastNome=nome;renderResultado();if(alertaHora){alertaHora=false;enviarAlertas(r,nome);}}).catch(function(err){if(id!==execId)return;alertaHora=false;console.error(nome,err);lastRes=null;atualizarContagem();resultados.innerHTML='<div class="warn-box">'+esc(nome+": falhou — "+(err&&err.message?err.message:"erro desconhecido"))+'</div>';status.textContent="Ocorreu um erro na consulta.";agendarSync();}).finally(function(){if(id===execId)loading(false);agendarSync();});}
+      montarCategorias();tgCarregar();tgVerificar();sincronizarAlturas();window.addEventListener("resize",sincronizarAlturas);tgOn.addEventListener("change",function(){tgCfg.on=tgOn.checked;tgSalvar();if(tgCfg.on&&!tgOk)tgVerificar();proximoEnvio();});tgMin.addEventListener("change",function(){var v=Number(tgMin.value);if(!isFinite(v)||v<0)v=0;if(v>10)v=10;tgCfg.min=v;tgMin.value=v;tgSalvar();});tgTeste.addEventListener("click",function(){tgTeste.disabled=true;tgVerificar().then(function(){if(!tgOk)return;return tgEnviar("✅ Teste de alerta do Bonding Map: o Telegram está conectado.").then(function(){tgMsg("Telegram: mensagem de teste enviada.");}).catch(function(e){tgMsg("Telegram: falha no teste — "+e.message);});}).finally(function(){tgTeste.disabled=false;});});listaCategorias.addEventListener("change",function(e){var el=e.target;if(!el||el.type!=="checkbox")return;if(el.checked)excluidas[el.value]=true;else delete excluidas[el.value];marcarItens();renderResultado();});fontePolymarket.addEventListener("change",function(){if(fontePolymarket.checked)load();});fonteKalshi.addEventListener("change",function(){if(fonteKalshi.checked)load();});
+var KALSHI_TAXA=0.07,ARB={busy:false,vec:{},emb:null,ign:(function(){try{return JSON.parse(localStorage.getItem("arbIgn"))||{};}catch(e){return {};}})()};
+      var ARB_MES={january:"jan",february:"feb",march:"mar",april:"apr",june:"jun",july:"jul",august:"aug",september:"sep",sept:"sep",october:"oct",november:"nov",december:"dec"},ARB_STOP={will:1,the:1,a:1,an:1,of:1,in:1,on:1,at:1,to:1,be:1,by:1,or:1,and:1,for:1,is:1,are:1,before:1,after:1,than:1,this:1,that:1,with:1,from:1,as:1,it:1,yes:1,no:1,does:1,do:1,did:1,have:1,has:1,been:1,win:1,wins:1};
+      function arbTokens(str){var x=String(str||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/(\d),(\d)/g,"$1$2").replace(/[^a-z0-9.]+/g," ").split(" "),seen={},out=[];for(var i=0;i<x.length;i++){var w=x[i].replace(/^\.+|\.+$/g,"");w=ARB_MES[w]||w;if(!w||ARB_STOP[w])continue;if(w.length<2&&!/\d/.test(w))continue;if(!seen[w]){seen[w]=1;out.push(w);}}return out;}
+      function arbNums(tokens){return tokens.filter(function(w){return /\d/.test(w)&&!/^20[2-3]\d$/.test(w);}).sort().join("|");}
+      function arbDir(txt){var t=String(txt||"").toLowerCase();return(/\b(above|over|exceeds?|higher|greater|at least|more than|or more)\b/.test(t)?"1":"0")+(/\b(below|under|lower|less than|fewer|at most|or less)\b/.test(t)?"1":"0")+(/\bbefore\b/.test(t)?"1":"0")+(/\bafter\b/.test(t)?"1":"0");}
+      function arbPoly(ms){var out=[];ms.forEach(function(m){if(!m||m.active===false||m.closed===true)return;var ps=positions(m),y=null,n=null;ps.forEach(function(p){if(/^(yes|sim)$/i.test(p.name))y=p;else if(/^(no|n[aã]o)$/i.test(p.name))n=p;});if(!y||!n||!y.tokenId||!n.tokenId)return;var toks=arbTokens(m.question||""),d=endDate(m),set={};toks.forEach(function(w){set[w]=1;});out.push({m:m,yes:y,no:n,toks:toks,set:set,nums:arbNums(toks),dir:arbDir(m.question),end:d?d.getTime():null,txt:String(m.question||"")});});return out;}
+      function arbKalshi(ms){var out=[],now=Date.now();ms.forEach(function(m){if(!kalshiOpen(m))return;var ask=kalshiNum(m.yes_ask_dollars),bid=kalshiNum(m.yes_bid_dollars),c=new Date(m.close_time).getTime();if(!(ask>0&&ask<1)||!(bid>0&&bid<1)||!isFinite(c)||c<=now)return;var txt=((m.title||"")+(m.yes_sub_title?" — "+m.yes_sub_title:"")).trim(),toks=arbTokens(txt);out.push({m:m,toks:toks,nums:arbNums(toks),dir:arbDir(txt),close:c,txt:txt});});return out;}
+      function arbCandidatos(P,K,tol,maxPer){var idx={};P.forEach(function(p,i){p.toks.forEach(function(w){(idx[w]=idx[w]||[]).push(i);});});var all=[];K.forEach(function(k){var cnt={};k.toks.forEach(function(w){var l=idx[w];if(!l||l.length>400)return;for(var j=0;j<l.length;j++)cnt[l[j]]=(cnt[l[j]]||0)+1;});var arr=[];Object.keys(cnt).forEach(function(key){var p=P[key];if(p.nums!==k.nums||p.dir!==k.dir)return;if(ARB.ign[p.yes.tokenId+"|"+k.m.ticker])return;if(p.end!==null&&Math.abs(p.end-k.close)>tol)return;var inter=0,com=[];k.toks.forEach(function(w){if(p.set[w]){inter++;com.push(w);}});if(inter<2)return;arr.push({p:p,k:k,jac:inter/(p.toks.length+k.toks.length-inter),inter:inter,com:com});});arr.sort(function(a,b){return b.jac-a.jac;});for(var q=0;q<arr.length&&q<maxPer;q++)all.push(arr[q]);});return all;}
+      function arbMutuo(list){var bk={},bp={};list.forEach(function(x){var kk=x.k.m.ticker,pk=x.p.yes.tokenId;if(!bk[kk]||x.sim>bk[kk].sim)bk[kk]=x;if(!bp[pk]||x.sim>bp[pk].sim)bp[pk]=x;});return list.filter(function(x){return bk[x.k.m.ticker]===x&&bp[x.p.yes.tokenId]===x;}).sort(function(a,b){return b.sim-a.sim;});}
+      function arbMatch(P,K,minSim,tol){var c=arbCandidatos(P,K,tol,3),l=[];c.forEach(function(x){if(x.jac<minSim)return;l.push({p:x.p,k:x.k,sim:x.jac,mode:"texto",com:x.com});});return arbMutuo(l);}
+      function arbEmbedder(st){if(ARB.emb)return ARB.emb;st.textContent="Carregando modelo de embeddings (cerca de 23 MB na primeira vez)...";ARB.emb=import("https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2").then(function(m){return m.pipeline("feature-extraction","Xenova/all-MiniLM-L6-v2",{dtype:"q8"});}).catch(function(e){ARB.emb=null;throw e;});return ARB.emb;}
+      function arbVetores(ex,textos,st){var falta=textos.filter(function(t){return !ARB.vec[t];}),i=0;function lote(){if(i>=falta.length)return Promise.resolve();var part=falta.slice(i,i+24);i+=24;return ex(part,{pooling:"mean",normalize:true}).then(function(o){var l=o.tolist();part.forEach(function(t,j){ARB.vec[t]=l[j];});st.textContent="Gerando embeddings: "+Math.min(i,falta.length)+"/"+falta.length;return new Promise(function(r){setTimeout(r,0);}).then(lote);});}return lote();}
+      function arbCos(a,b){var s=0;for(var i=0;i<a.length;i++)s+=a[i]*b[i];return s;}
+      function arbCasarIA(ex,P,K,minCos,tol,st){var cand=arbCandidatos(P,K,tol,5);cand.sort(function(a,b){return b.jac-a.jac;});cand=cand.slice(0,800);var seen={},textos=[];cand.forEach(function(x){[x.p.txt,x.k.txt].forEach(function(t){if(!seen[t]){seen[t]=1;textos.push(t);}});});st.textContent=cand.length+" pares candidatos. Gerando embeddings de "+textos.length+" textos...";return arbVetores(ex,textos,st).then(function(){var l=[];cand.forEach(function(x){var cs=arbCos(ARB.vec[x.p.txt],ARB.vec[x.k.txt]);if(cs>=minCos)l.push({p:x.p,k:x.k,sim:cs,mode:"IA",com:x.com});});return arbMutuo(l);});}
+      function arbEval(pair){var p=pair.p,k=pair.k;return Promise.all([getBook(p.yes.tokenId),getBook(p.no.tokenId)]).then(function(bs){var ay=normalizeAsks(Array.isArray(bs[0].asks)?bs[0].asks:[]),an=normalizeAsks(Array.isArray(bs[1].asks)?bs[1].asks:[]),tx=taxaMercado(p.m);function fp(x){return feeShare(x,tx);}function fk(x){return KALSHI_TAXA*x*(1-x);}var yk=kalshiNum(k.m.yes_ask_dollars),ykS=kalshiNum(k.m.yes_ask_size_fp),bid=kalshiNum(k.m.yes_bid_dollars),nkS=kalshiNum(k.m.yes_bid_size_fp),nk=1-bid,opts=[];if(ay.length)opts.push({nome:"YES na Polymarket + NO na Kalshi",a:ay[0].price,b:nk,sa:ay[0].size,sb:nkS,la:"YES Polymarket",lb:"NO Kalshi",fa:fp,fb:fk});if(an.length)opts.push({nome:"YES na Kalshi + NO na Polymarket",a:yk,b:an[0].price,sa:ykS,sb:an[0].size,la:"YES Kalshi",lb:"NO Polymarket",fa:fk,fb:fp});var best=null;opts.forEach(function(o){if(!(o.a>0&&o.b>0&&o.a<1&&o.b<1))return;o.cost=o.a+o.fa(o.a)+o.b+o.fb(o.b);o.profit=1-o.cost;o.roi=o.profit/o.cost*100;var q=[o.sa,o.sb].filter(function(v){return v!==null&&isFinite(v)&&v>0;});o.qty=q.length?Math.min.apply(null,q):null;if(!best||o.roi>best.roi)best=o;});return best?{pair:pair,best:best}:null;}).catch(function(){return null;});}
+      function arbCard(r,orc){var p=r.pair.p,k=r.pair.k,b=r.best,pm=p.m,km=k.m,win=b.profit>0,n=Math.min(orc/b.cost,b.qty!==null?b.qty:Infinity),inv=n*b.cost,lucro=n*b.profit,kd=new Date(km.close_time),kurl="https://kalshi.com/markets/"+encodeURIComponent(km.ticker),purl=marketUrl(pm),key=p.yes.tokenId+"|"+km.ticker;
+        var pt=purl?'<a class="market-link" href="'+esc(purl)+'" target="_blank" rel="noopener noreferrer">'+esc(pm.question||"Mercado")+'</a>':esc(pm.question||"Mercado");
+        return'<article class="card arb-pair"><div class="arb-head"><span class="arb-badge '+(win?'win':'')+'">'+(win?'ARBITRAGEM':'SEM ARBITRAGEM')+'</span><span class="arb-sim">'+(r.pair.mode==="IA"?'similaridade (IA) ':'similaridade (texto) ')+(r.pair.sim*100).toFixed(0)+'%</span><button type="button" class="arb-ign secondary" data-k="'+esc(key)+'" title="Esconder este par e não mostrá-lo mais">Não é o mesmo</button></div>'
+        +'<div class="arb-names"><div><span class="arb-src">Polymarket</span><h2 class="question">'+pt+'</h2></div><div><span class="arb-src">Kalshi</span><h2 class="question"><a class="market-link" href="'+esc(kurl)+'" target="_blank" rel="noopener noreferrer">'+esc(km.title||km.yes_sub_title||km.ticker)+(km.yes_sub_title?' — '+esc(km.yes_sub_title):'')+'</a></h2></div></div>'
+        +'<div class="details"><div class="row"><span>Palavras em comum</span><strong>'+esc((r.pair.com||[]).join(", "))+'</strong></div><div class="row"><span>Resolve (Polymarket)</span><strong>'+esc(dateText(pm))+'</strong></div><div class="row"><span>Resolve (Kalshi)</span><strong>'+esc(new Intl.DateTimeFormat("pt-BR",{dateStyle:"medium",timeStyle:"short"}).format(kd))+'</strong></div></div>'
+        +'<div class="section"><h3 class="section-title">Melhor estratégia</h3><div class="details"><div class="row"><span>Operação</span><strong>'+esc(b.nome)+'</strong></div><div class="row"><span>'+esc(b.la)+'</span><strong>'+money(b.a,3)+'</strong></div><div class="row"><span>'+esc(b.lb)+'</span><strong>'+money(b.b,3)+'</strong></div><div class="row"><span>Custo por par (com taxas)</span><strong>'+money(b.cost,3)+'</strong></div><div class="row"><span>Lucro por par</span><strong class="'+(win?'good':'bad')+'">'+money(b.profit,3)+' ('+pct(b.roi)+')</strong></div><div class="row"><span>Contratos no topo do livro</span><strong>'+(b.qty===null?"Não informado":b.qty.toFixed(2))+'</strong></div>'
+        +'<div class="row"><span>Para US$ '+orc.toFixed(2)+'</span><strong class="'+(win?'good':'bad')+'">'+n.toFixed(2)+' pares · investe '+money(inv,2)+' · '+(lucro>=0?'lucro ':'prejuízo ')+money(Math.abs(lucro),2)+'</strong></div></div></div></article>';}
+      function arbRun(){if(ARB.busy)return;var d=Number(document.getElementById("arb-dias").value),sm=Number(document.getElementById("arb-sim").value),orc=Number(document.getElementById("arb-orc").value),modo=document.getElementById("arb-modo").value,so=document.getElementById("arb-so").checked,st=document.getElementById("arb-status"),res=document.getElementById("arb-res"),btn=document.getElementById("arb-run"),tol=72*3600000;
+        if(!isFinite(d)||d<1||d>30){st.textContent="Informe entre 1 e 30 dias.";return;}if(!isFinite(sm)||sm<40||sm>100){st.textContent="Similaridade entre 40 e 100%.";return;}if(!isFinite(orc)||orc<=0){st.textContent="Informe um orçamento maior que zero.";return;}
+        ARB.busy=true;btn.disabled=true;st.textContent="Carregando mercados das duas plataformas...";res.innerHTML='<div class="message">Buscando mercados na Polymarket e na Kalshi...</div>';
+        Promise.all([cached("arb:p:"+d,TTL_LISTA,function(){return buscarMercados({dias:d});}),kalshiMarkets({dias:d})]).then(function(r){var P=arbPoly(r[0]),K=arbKalshi(r[1]);st.textContent=P.length+" (Polymarket) x "+K.length+" (Kalshi). Casando mercados...";
+          var casar=modo==="ia"?arbEmbedder(st).then(function(ex){return arbCasarIA(ex,P,K,sm/100,tol,st);}).catch(function(e){st.textContent="Embeddings indisponíveis ("+(e&&e.message?e.message:"erro")+"). Usando texto.";return arbMatch(P,K,0.6,tol);}):Promise.resolve(arbMatch(P,K,sm/100,tol));
+          return casar.then(function(pairs){pairs=pairs.slice(0,80);var out=[],i=0;st.textContent=pairs.length+" pares casados. Consultando livros...";function lote(){if(i>=pairs.length)return Promise.resolve();var part=pairs.slice(i,i+10);i+=10;return Promise.all(part.map(arbEval)).then(function(x){x.forEach(function(v){if(v)out.push(v);});st.textContent="Livros consultados: "+Math.min(i,pairs.length)+"/"+pairs.length;return lote();});}
+          return lote().then(function(){out.sort(function(a,b){return b.best.roi-a.best.roi;});var wins=out.filter(function(v){return v.best.profit>0;}),show=(so?wins:out).slice(0,50);st.textContent=out.length+" pares avaliados · "+wins.length+" com lucro após taxas";res.innerHTML=show.length?show.map(function(v){return arbCard(v,orc);}).join(""):'<div class="message">'+(out.length?"Nenhum par com lucro após taxas. Desmarque \u201cSó com lucro\u201d para ver todos os pares comparados.":"Nenhum par de mercados equivalentes foi encontrado. Tente aumentar o prazo ou reduzir a similaridade mínima.")+'</div>';});});
+        }).catch(function(e){st.textContent="Erro na busca.";res.innerHTML='<div class="message error"><strong>Não foi possível comparar os mercados.</strong><br>'+esc(e&&e.message?e.message:"erro desconhecido")+'</div>';}).finally(function(){ARB.busy=false;btn.disabled=false;});}
+      var tabM=document.getElementById("tab-mercados"),tabA=document.getElementById("tab-arb"),mainM=document.getElementById("aba-mercados"),mainA=document.getElementById("aba-arbitragem");
+      function mostrarAba(arb){mainM.hidden=arb;mainA.hidden=!arb;tabM.classList.toggle("on",!arb);tabA.classList.toggle("on",arb);document.body.classList.toggle("tab-arb",arb);}
+      tabM.addEventListener("click",function(){mostrarAba(false);});tabA.addEventListener("click",function(){mostrarAba(true);});document.getElementById("arb-run").addEventListener("click",arbRun);document.getElementById("arb-modo").addEventListener("change",function(){document.getElementById("arb-sim").value=this.value==="ia"?88:60;});
+      document.getElementById("arb-res").addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".arb-ign");if(!b)return;ARB.ign[b.getAttribute("data-k")]=1;try{localStorage.setItem("arbIgn",JSON.stringify(ARB.ign));}catch(x){}var c=b.closest(".arb-pair");if(c)c.remove();});
+      resultados.addEventListener("click",function(e){var el=e.target;if(!el||!el.closest)return;var a=el.closest(".sim-btn"),c=el.closest(".sim-calc"),x=el.closest(".sim-close");if(a)abrirSim(a.closest(".sim-box"));else if(c){var bx=c.closest(".sim-box");calcSim(bx,bx.querySelector(".sim-input").value);}else if(x){fecharSim(x.closest(".sim-box"),false);}});resultados.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.classList&&e.target.classList.contains("sim-input")){e.preventDefault();var bx=e.target.closest(".sim-box");calcSim(bx,e.target.value);}});var tgBtn=document.getElementById("tg-toggle"),tgBox=document.getElementById("tg-box");function tgFechar(){tgBox.classList.remove("open");tgBtn.setAttribute("aria-expanded","false");}tgBtn.addEventListener("click",function(e){e.stopPropagation();var o=tgBox.classList.toggle("open");tgBtn.setAttribute("aria-expanded",o?"true":"false");});document.addEventListener("click",function(e){if(tgBox.classList.contains("open")&&!tgBox.contains(e.target))tgFechar();});document.addEventListener("keydown",function(e){if(e.key==="Escape")tgFechar();});formulario.addEventListener("submit",function(e){e.preventDefault();load();});botaoRestaurar.addEventListener("click",function(){campoDias.value=7;campoProbMin.value=90;campoProbMax.value=99;campoOrcamento.value=100;load();});load();setInterval(function(){if(!busy)load();},300000);var tgProx=document.getElementById("tg-proximo");function msAteHoraCheia(){var d=new Date();d.setMinutes(0,0,0);d.setHours(d.getHours()+1);return d.getTime()-Date.now();}function proximoEnvio(){if(!tgProx)return;var d=new Date(Date.now()+msAteHoraCheia());tgProx.textContent=tgCfg.on?"Próximo envio: "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})+" (a cada hora cheia)":"Alertas enviados a cada hora cheia, quando ativados.";}function agendarAlerta(){proximoEnvio();setTimeout(function(){alertaHora=true;load();agendarAlerta();},msAteHoraCheia()+500);}agendarAlerta();
+    })();
+  </script>
+</body>
+</html>
