@@ -171,13 +171,12 @@ button.secondary{background:transparent;color:var(--accent)}
 #aba-mercados .filters input[type="number"]{width:62px;padding:4px 6px;font-size:.78rem;border-radius:6px}
 #aba-mercados .panel:first-child button{padding:4px 10px;font-size:.78rem;border-radius:6px}
 #aba-mercados .actions{flex:1 1 auto;flex-direction:row;align-items:center;margin-top:0;gap:10px}
-#aba-mercados #tg-toggle{margin-left:auto}
 #aba-mercados .actions .status{display:inline-block;text-align:left;font-size:.78rem;white-space:nowrap}
 #aba-mercados .tg{display:none;position:absolute;right:10px;top:calc(100% + 6px);width:290px;padding:12px;margin:0;border:1.5px solid var(--accent);border-radius:10px;background:var(--panel);box-shadow:0 12px 32px rgba(0,0,0,.6);gap:10px}
 #aba-mercados .tg.open{display:grid}
 #aba-mercados .tg .field{width:100%}
 #aba-mercados .tg input[type="number"]{width:100%}
-@media (max-width:900px){#aba-mercados{grid-template-columns:minmax(0,1fr);grid-template-areas:"filtros" "cats" "res";row-gap:24px}#aba-mercados .tg{left:10px;right:10px;width:auto}}
+@media (max-width:900px){#aba-mercados{grid-template-columns:minmax(0,1fr);grid-template-areas:"filtros" "cats" "res";row-gap:24px}#aba-mercados .tg,#aba-mercados .wbox{left:10px;right:10px;width:auto}}
 
 /* ===== ABAS + ARBITRAGEM ===== */
 #aba-mercados[hidden],#aba-arbitragem[hidden]{display:none}
@@ -204,6 +203,20 @@ body.tab-arb,body.tab-arb:has(#fonte-kalshi:checked){--accent:#f5c542;--accent-i
 .arb-names .question{font-size:1rem;margin:4px 0 0}
 .arb-src{color:var(--yellow);font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}
 @media (max-width:700px){.arb-names{grid-template-columns:1fr}}
+
+/* ===== CARTEIRA (somente leitura) ===== */
+#aba-mercados #w-toggle{margin-left:auto}
+#aba-mercados #tg-toggle{margin-left:0}
+#aba-mercados #w-toggle.conectada{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+#aba-mercados .wbox{display:none;position:absolute;right:10px;top:calc(100% + 6px);width:340px;max-width:calc(100% - 20px);padding:12px;margin:0;border:1.5px solid var(--accent);border-radius:10px;background:var(--panel);box-shadow:0 12px 32px rgba(0,0,0,.6);gap:10px}
+#aba-mercados .wbox.open{display:grid}
+#aba-mercados .wbox h3{margin:0;font-size:.85rem;color:var(--yellow);text-transform:uppercase;letter-spacing:.04em}
+#aba-mercados .wbox[hidden],#aba-mercados .wbox [hidden]{display:none}
+#aba-mercados .wbox input[type="text"]{width:100%;padding:6px 8px;font-size:.78rem;border:1.5px solid var(--accent);border-radius:6px;background:#0c1224;color:var(--text)}
+#aba-mercados .wbox .field{width:100%;display:grid;gap:4px;margin-bottom:8px}
+#aba-mercados .wbox .details{margin:8px 0;max-height:240px;overflow:auto}
+#aba-mercados .wbox .row{font-size:.75rem}
+.pos-badge{margin:0 0 12px;padding:6px 10px;border:1px solid var(--accent);border-radius:8px;color:var(--accent);font-size:.82rem}
 </style>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
 </head>
@@ -227,7 +240,7 @@ body.tab-arb,body.tab-arb:has(#fonte-kalshi:checked){--accent:#f5c542;--accent-i
           <input id="orcamento" type="hidden" value="100">
           
         </div>
-        <div class="actions"><button id="aplicar" type="submit">Aplicar filtros</button><button id="restaurar" class="secondary" type="button">Restaurar padrão</button><span id="status" class="status">Aguardando consulta...</span><button id="tg-toggle" class="secondary" type="button" aria-expanded="false" aria-controls="tg-box">Telegram</button></div>
+        <div class="actions"><button id="aplicar" type="submit">Aplicar filtros</button><button id="restaurar" class="secondary" type="button">Restaurar padrão</button><span id="status" class="status">Aguardando consulta...</span><button id="w-toggle" class="secondary" type="button" aria-expanded="false" aria-controls="w-box">Carteira</button><button id="tg-toggle" class="secondary" type="button" aria-expanded="false" aria-controls="tg-box">Telegram</button></div>
       </form>
       <div class="tg" id="tg-box">
         <h3>Alertas Telegram</h3>
@@ -236,6 +249,21 @@ body.tab-arb,body.tab-arb:has(#fonte-kalshi:checked){--accent:#f5c542;--accent-i
         <button id="tg-teste" class="secondary" type="button">Enviar teste</button>
         <p id="tg-status" class="status">Telegram: verificando...</p>
         <p id="tg-proximo" class="status"></p>
+      </div>
+
+      <div class="wbox" id="w-box">
+        <h3>Carteira Polymarket</h3>
+        <div id="w-form">
+          <div class="field"><label for="w-end">Endereço da sua conta (0x...)</label><input id="w-end" type="text" placeholder="0x..." autocomplete="off" spellcheck="false"></div>
+          <button id="w-ok" type="button">Conectar</button>
+        </div>
+        <div id="w-info" hidden>
+          <p id="w-resumo" class="status"></p>
+          <div id="w-lista" class="details"></div>
+          <button id="w-off" class="secondary" type="button">Desconectar</button>
+        </div>
+        <p id="w-status" class="status"></p>
+        <p class="status">Somente leitura. Use o endereço público do seu perfil. Nunca informe chave privada nem frase de recuperação.</p>
       </div>
       
     </section>
@@ -313,7 +341,7 @@ body.tab-arb,body.tab-arb:has(#fonte-kalshi:checked){--accent:#f5c542;--accent-i
       var alertaHora=false;
       function card(c,f){var m=c.market,p=c.position,b=c.book,q=esc(m.question||"Mercado sem título"),name=esc(p.name),v=volume24h(m),score=bondingScore(c,f),bookHtml;if(b&&b.available){bookHtml=simBox("p:"+p.tokenId,"poly",b.asks,b.fee,f);}else{bookHtml='<div class="section"><h3 class="section-title">Livro CLOB</h3><div class="row"><span>Consulta do livro</span><strong class="bad">'+esc(b&&b.reason?b.reason:"Não disponível")+'</strong></div></div>';}
         var url=marketUrl(m),title=url?'<a class="market-link" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" aria-label="Abrir mercado na Polymarket">'+q+'</a>':q;
-        return'<article class="card"><div class="title-row">'+scoreHtml(score)+'<h2 class="question">'+title+'</h2></div>'+(aoVivo(m)?'<div class="live-badge">● AO VIVO</div>':'')+'<div class="highlights"><div class="highlight '+(/^(yes|sim)$/i.test(String(p.name))?"positive":"negative")+'">'+name+' '+(p.price*100).toFixed(1)+'%</div></div><div class="details"><div class="row"><span>Resolve em</span><strong>'+esc(time(hours(m)))+' ('+esc(dateText(m))+')</strong></div><div class="row"><span>Liquidez informada</span><strong>'+money(liquidity(m))+'</strong></div><div class="row"><span>Volume em 24h</span><strong>'+(v===null?"Não informado":money(v))+'</strong></div><div class="row"><span>Acurácia</span><strong>'+acuracia(hours(m))+'</strong></div></div>'+bookHtml+'</article>';}
+        return'<article class="card" data-asset="'+esc(p.tokenId||"")+'"><div class="title-row">'+scoreHtml(score)+'<h2 class="question">'+title+'</h2></div>'+(aoVivo(m)?'<div class="live-badge">● AO VIVO</div>':'')+'<div class="highlights"><div class="highlight '+(/^(yes|sim)$/i.test(String(p.name))?"positive":"negative")+'">'+name+' '+(p.price*100).toFixed(1)+'%</div></div><div class="details"><div class="row"><span>Resolve em</span><strong>'+esc(time(hours(m)))+' ('+esc(dateText(m))+')</strong></div><div class="row"><span>Liquidez informada</span><strong>'+money(liquidity(m))+'</strong></div><div class="row"><span>Volume em 24h</span><strong>'+(v===null?"Não informado":money(v))+'</strong></div><div class="row"><span>Acurácia</span><strong>'+acuracia(hours(m))+'</strong></div></div>'+bookHtml+'</article>';}
       function pontuar(ret,h,liq,vol,f){function lg(x,ref){return clamp(Math.log(1+Math.max(0,Number(x)||0))/Math.log(1+ref),0,1);}return 4*clamp((Number(ret)||0)/10,0,1)+3*(1-clamp((h===null||!isFinite(h)?0:Math.max(0,h))/(f.dias*24),0,1))+2*lg(liq,100000)+1*lg(vol,100000);}
       var CATEGORIAS=["Politics","Sports","Crypto","Esports","Iran","Finance","Geopolitics","Tech","Culture","Economy","Weather","Mentions","Elections","Art"];
       var PADROES={Politics:/\b(president|presidential|senate|senator|congress|house of representatives|trump|biden|harris|vance|democrat|republican|gop|governor|parliament|prime minister|white house|supreme court|cabinet|impeach|speaker of the house|executive order|shutdown|veto)\b/i,Sports:/\b(nba|nfl|mlb|nhl|wnba|ncaa|soccer|football|fifa|premier league|uefa|champions league|europa league|la liga|serie a|bundesliga|ligue 1|tennis|atp|wta|wimbledon|us open|french open|ufc|mma|boxing|f1|formula 1|grand prix|olympic|olympics|world cup|golf|pga|masters|cricket|ipl|rugby|super bowl|stanley cup|world series|playoffs?|touchdown|vs\.?)\b/i,Crypto:/\b(bitcoin|btc|ethereum|eth|solana|sol|crypto|cryptocurrency|xrp|ripple|dogecoin|doge|token|coinbase|binance|stablecoin|altcoin|memecoin|defi|nft|airdrop|fdv)\b/i,Esports:/\b(esports?|league of legends|lol|dota|dota 2|counter-strike|cs2|csgo|valorant|overwatch|call of duty|rocket league|starcraft|t1|blast|iem|pgl|lck|lpl)\b/i,Iran:/\b(iran|iranian|tehran|khamenei|irgc|persian gulf|strait of hormuz)\b/i,Finance:/\b(stocks?|s&p|s&p 500|spx|nasdaq|dow jones|equities|earnings|ipo|market cap|treasury|bond yield|yield|forex|usd|eur|gold|silver|oil|crude|brent|wti|nvidia|nvda|tesla|tsla|apple|aapl|microsoft|msft|amazon|amzn|close (above|below|at)|shares|etf|vix)\b/i,Geopolitics:/\b(war|ukraine|russia|russian|israel|gaza|hamas|hezbollah|china|taiwan|nato|ceasefire|sanctions?|putin|zelensky|north korea|kim jong|missile|invasion|nuclear|syria|yemen|houthi|venezuela|border|annex|treaty|un security council)\b/i,Tech:/\b(ai|a\.i\.|openai|gpt|chatgpt|gemini|claude|anthropic|google|meta|spacex|starship|elon musk|musk|iphone|android|software|robot|robotaxi|chip|semiconductor|tiktok|x\.com|twitter|launch|model|llm|quantum|satellite)\b/i,Culture:/\b(movie|film|oscars?|academy awards|grammys?|emmys?|golden globes?|box office|album|song|billboard|spotify|taylor swift|beyonce|netflix|celebrity|tv show|series|season|streaming|actor|actress|singer|rapper|concert|tour|podcast|youtube|mrbeast|kardashian|reality)\b/i,Economy:/\b(inflation|cpi|pce|gdp|unemployment|jobs report|nonfarm|payrolls?|recession|fomc|fed|federal reserve|interest rates?|rate cuts?|rate hike|tariffs?|economy|economic|mortgage|housing|retail sales|consumer sentiment|debt ceiling|deficit)\b/i,Weather:/\b(weather|temperature|temp|degrees|high temp|low temp|hurricane|tropical storm|typhoon|tornado|snow|snowfall|rain|rainfall|precipitation|heat wave|storm|blizzard|wildfire|earthquake|climate|el nino|la nina)\b/i,Mentions:/\b(say|says|said|mention|mentions|mentioned|word|words|phrase|tweets?|posts?)\b/i,Elections:/\b(election|elections|primary|primaries|nominee|nomination|ballot|runoff|mayor|mayoral|midterms?|electoral|polls?|vote share|turnout|winner of the .* (race|election)|governor race|senate race|presidential race)\b/i,Art:/\b(art|artist|painting|paintings|museum|sculpture|gallery|auction|christie'?s|sotheby'?s|banksy|picasso|exhibit|exhibition|nft art)\b/i};
@@ -405,7 +433,28 @@ var KALSHI_TAXA=0.07,ARB={busy:false,vec:{},emb:null,ign:(function(){try{return 
       function mostrarAba(arb){mainM.hidden=arb;mainA.hidden=!arb;tabM.classList.toggle("on",!arb);tabA.classList.toggle("on",arb);document.body.classList.toggle("tab-arb",arb);}
       tabM.addEventListener("click",function(){mostrarAba(false);});tabA.addEventListener("click",function(){mostrarAba(true);});document.getElementById("arb-run").addEventListener("click",arbRun);document.getElementById("arb-modo").addEventListener("change",function(){document.getElementById("arb-sim").value=this.value==="ia"?88:60;});
       document.getElementById("arb-res").addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".arb-ign");if(!b)return;ARB.ign[b.getAttribute("data-k")]=1;try{localStorage.setItem("arbIgn",JSON.stringify(ARB.ign));}catch(x){}var c=b.closest(".arb-pair");if(c)c.remove();});
-      resultados.addEventListener("click",function(e){var el=e.target;if(!el||!el.closest)return;var a=el.closest(".sim-btn"),c=el.closest(".sim-calc"),x=el.closest(".sim-close");if(a)abrirSim(a.closest(".sim-box"));else if(c){var bx=c.closest(".sim-box");calcSim(bx,bx.querySelector(".sim-input").value);}else if(x){fecharSim(x.closest(".sim-box"),false);}});resultados.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.classList&&e.target.classList.contains("sim-input")){e.preventDefault();var bx=e.target.closest(".sim-box");calcSim(bx,e.target.value);}});var tgBtn=document.getElementById("tg-toggle"),tgBox=document.getElementById("tg-box");function tgFechar(){tgBox.classList.remove("open");tgBtn.setAttribute("aria-expanded","false");}tgBtn.addEventListener("click",function(e){e.stopPropagation();var o=tgBox.classList.toggle("open");tgBtn.setAttribute("aria-expanded",o?"true":"false");});document.addEventListener("click",function(e){if(tgBox.classList.contains("open")&&!tgBox.contains(e.target))tgFechar();});document.addEventListener("keydown",function(e){if(e.key==="Escape")tgFechar();});formulario.addEventListener("submit",function(e){e.preventDefault();load();});botaoRestaurar.addEventListener("click",function(){campoDias.value=7;campoProbMin.value=90;campoProbMax.value=99;campoOrcamento.value=100;load();});load();setInterval(function(){if(!busy)load();},300000);var tgProx=document.getElementById("tg-proximo");function msAteHoraCheia(){var d=new Date();d.setMinutes(0,0,0);d.setHours(d.getHours()+1);return d.getTime()-Date.now();}function proximoEnvio(){if(!tgProx)return;var d=new Date(Date.now()+msAteHoraCheia());tgProx.textContent=tgCfg.on?"Próximo envio: "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})+" (a cada hora cheia)":"Alertas enviados a cada hora cheia, quando ativados.";}function agendarAlerta(){proximoEnvio();setTimeout(function(){alertaHora=true;load();agendarAlerta();},msAteHoraCheia()+500);}agendarAlerta();
+      resultados.addEventListener("click",function(e){var el=e.target;if(!el||!el.closest)return;var a=el.closest(".sim-btn"),c=el.closest(".sim-calc"),x=el.closest(".sim-close");if(a)abrirSim(a.closest(".sim-box"));else if(c){var bx=c.closest(".sim-box");calcSim(bx,bx.querySelector(".sim-input").value);}else if(x){fecharSim(x.closest(".sim-box"),false);}});resultados.addEventListener("keydown",function(e){if(e.key==="Enter"&&e.target.classList&&e.target.classList.contains("sim-input")){e.preventDefault();var bx=e.target.closest(".sim-box");calcSim(bx,e.target.value);}});var tgBtn=document.getElementById("tg-toggle"),tgBox=document.getElementById("tg-box");function tgFechar(){tgBox.classList.remove("open");tgBtn.setAttribute("aria-expanded","false");}tgBtn.addEventListener("click",function(e){e.stopPropagation();var o=tgBox.classList.toggle("open");tgBtn.setAttribute("aria-expanded",o?"true":"false");});document.addEventListener("click",function(e){if(tgBox.classList.contains("open")&&!tgBox.contains(e.target))tgFechar();});document.addEventListener("keydown",function(e){if(e.key==="Escape")tgFechar();});
+var WAL={addr:null,pos:{},list:[],val:null,timer:null};
+      try{WAL.addr=localStorage.getItem("walAddr")||null;}catch(e){}
+      var wBox=document.getElementById("w-box"),wBtn=document.getElementById("w-toggle"),wEnd=document.getElementById("w-end"),wOk=document.getElementById("w-ok"),wOff=document.getElementById("w-off"),wForm=document.getElementById("w-form"),wInfo=document.getElementById("w-info"),wSt=document.getElementById("w-status"),wRes=document.getElementById("w-resumo"),wLista=document.getElementById("w-lista");
+      function wFechar(){wBox.classList.remove("open");wBtn.setAttribute("aria-expanded","false");}
+      function walFetch(path){function viaApi(){return fetch("/api/polydata"+path,{headers:{Accept:"application/json"}}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json();});}return fetch("https://data-api.polymarket.com"+path,{headers:{Accept:"application/json"}}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}).catch(viaApi);}
+      function walCurto(a){return a.slice(0,6)+"…"+a.slice(-4);}
+      function marcarPosicoes(){Array.prototype.forEach.call(resultados.querySelectorAll(".card[data-asset]"),function(c){var p=WAL.addr?WAL.pos[c.getAttribute("data-asset")]:null,old=c.querySelector(".pos-badge");if(!p){if(old)old.remove();return;}var txt="Você tem "+Number(p.size).toFixed(2)+" shares · preço médio "+money(p.avgPrice,3)+" · P&L "+(Number(p.cashPnl)>0?"+":"")+money(p.cashPnl,2)+" ("+pct(p.percentPnl)+")";if(old){old.textContent=txt;return;}var d=document.createElement("div");d.className="pos-badge";d.textContent=txt;var h=c.querySelector(".highlights");if(h)h.parentNode.insertBefore(d,h);});}
+      function walRender(){var on=!!WAL.addr;wForm.hidden=on;wInfo.hidden=!on;wBtn.classList.toggle("conectada",on);wBtn.textContent=on?"Carteira "+walCurto(WAL.addr):"Carteira";if(!on)return;wRes.textContent=(WAL.val===null?"Valor indisponível":"Valor: "+money(WAL.val,2))+" · "+WAL.list.length+(WAL.list.length===1?" posição":" posições");wLista.innerHTML=WAL.list.slice(0,8).map(function(p){var t=String(p.title||"");return'<div class="row"><span>'+esc(t.length>46?t.slice(0,45)+"…":t)+' · '+esc(p.outcome||"")+'</span><strong class="'+(Number(p.cashPnl)>=0?"good":"bad")+'">'+Number(p.size).toFixed(1)+' sh · '+(Number(p.cashPnl)>0?"+":"")+money(p.cashPnl,2)+'</strong></div>';}).join("")||'<div class="row"><span>Nenhuma posição aberta encontrada. Confirme que o endereço é o da sua conta Polymarket.</span></div>';}
+      function walCarregar(){if(!WAL.addr)return Promise.resolve();wSt.textContent="Consultando posições...";return Promise.all([walFetch("/positions?user="+WAL.addr+"&sizeThreshold=0.01&limit=500&sortBy=CURRENT"),walFetch("/value?user="+WAL.addr).catch(function(){return null;})]).then(function(r){var map={},list=Array.isArray(r[0])?r[0]:[];list.forEach(function(p){if(p&&p.asset)map[p.asset]=p;});WAL.pos=map;WAL.list=list;var v=Array.isArray(r[1])&&r[1][0]?Number(r[1][0].value):null;WAL.val=isFinite(v)?v:null;wSt.textContent="Atualizado às "+new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});walRender();marcarPosicoes();}).catch(function(e){wSt.textContent="Não foi possível consultar a carteira ("+(e&&e.message?e.message:"erro")+").";});}
+      function walConectar(){var a=String(wEnd.value||"").trim();if(!/^0x[a-fA-F0-9]{40}$/.test(a)){wSt.textContent="Endereço inválido: use 0x seguido de 40 caracteres.";return;}WAL.addr=a.toLowerCase();try{localStorage.setItem("walAddr",WAL.addr);}catch(e){}walRender();walCarregar();}
+      function walDesconectar(){WAL.addr=null;WAL.pos={};WAL.list=[];WAL.val=null;try{localStorage.removeItem("walAddr");}catch(e){}wEnd.value="";wSt.textContent="";walRender();marcarPosicoes();}
+      wBtn.addEventListener("click",function(e){e.stopPropagation();if(typeof tgFechar==="function")tgFechar();var o=wBox.classList.toggle("open");wBtn.setAttribute("aria-expanded",o?"true":"false");});
+      wBox.addEventListener("click",function(e){e.stopPropagation();});
+      document.addEventListener("click",function(){wFechar();});
+      document.addEventListener("keydown",function(e){if(e.key==="Escape")wFechar();});
+      document.getElementById("tg-toggle").addEventListener("click",function(){wFechar();},true);
+      wOk.addEventListener("click",walConectar);wOff.addEventListener("click",walDesconectar);wEnd.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();walConectar();}});
+      new MutationObserver(function(){if(WAL.addr)marcarPosicoes();}).observe(resultados,{childList:true});
+      setInterval(function(){if(WAL.addr)walCarregar();},180000);
+      walRender();if(WAL.addr)walCarregar();
+      formulario.addEventListener("submit",function(e){e.preventDefault();load();});botaoRestaurar.addEventListener("click",function(){campoDias.value=7;campoProbMin.value=90;campoProbMax.value=99;campoOrcamento.value=100;load();});load();setInterval(function(){if(!busy)load();},300000);var tgProx=document.getElementById("tg-proximo");function msAteHoraCheia(){var d=new Date();d.setMinutes(0,0,0);d.setHours(d.getHours()+1);return d.getTime()-Date.now();}function proximoEnvio(){if(!tgProx)return;var d=new Date(Date.now()+msAteHoraCheia());tgProx.textContent=tgCfg.on?"Próximo envio: "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})+" (a cada hora cheia)":"Alertas enviados a cada hora cheia, quando ativados.";}function agendarAlerta(){proximoEnvio();setTimeout(function(){alertaHora=true;load();agendarAlerta();},msAteHoraCheia()+500);}agendarAlerta();
     })();
   </script>
 </body>
